@@ -3,6 +3,7 @@
 # License: GNU GPLv2, see LICENSE.txt
 import atexit
 import ConfigParser
+import importlib
 import os
 import re
 import sys
@@ -81,12 +82,14 @@ class VideoLooper(object):
     def _load_player(self):
         """Load the configured video player and return an instance of it."""
         module = self._config.get('video_looper', 'video_player')
-        return __import__(module).create_player(self._config)
+        return importlib.import_module('.' + module, 'Adafruit_Video_Looper') \
+            .create_player(self._config)
 
     def _load_file_reader(self):
         """Load the configured file reader and return an instance of it."""
         module = self._config.get('video_looper', 'file_reader')
-        return __import__(module).create_file_reader(self._config)
+        return importlib.import_module('.' + module, 'Adafruit_Video_Looper') \
+            .create_file_reader(self._config)
 
     def _build_playlist(self):
         """Search all the file reader paths for movie files with the provided
@@ -204,7 +207,7 @@ class VideoLooper(object):
 
 
 # Main entry point.
-if __name__ == '__main__':
+def main():
     # Default config path to /boot.
     config_path = '/boot/video_looper.ini'
     # Override config path if provided as parameter.
