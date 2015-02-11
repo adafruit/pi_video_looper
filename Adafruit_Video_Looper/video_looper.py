@@ -1,12 +1,12 @@
 # Copyright 2015 Adafruit Industries.
 # Author: Tony DiCola
 # License: GNU GPLv2, see LICENSE.txt
-import atexit
 import ConfigParser
 import importlib
 import os
 import re
 import sys
+import signal
 import time
 
 import pygame
@@ -50,7 +50,6 @@ class VideoLooper(object):
         self._console_output = self._config.getboolean('video_looper', 'console_output')
         # Load configured video player and file reader modules.
         self._player = self._load_player()
-        atexit.register(self._player.stop)  # Make sure to stop player on exit.
         self._reader = self._load_file_reader()
         # Load other configuration values.
         self._osd = self._config.getboolean('video_looper', 'osd')
@@ -73,6 +72,7 @@ class VideoLooper(object):
         self._extensions = self._player.supported_extensions()
         self._small_font = pygame.font.Font(None, 50)
         self._big_font   = pygame.font.Font(None, 250)
+        self._running    = True
 
     def _print(self, message):
         """Print message to standard output if console output is enabled."""
@@ -186,7 +186,7 @@ class VideoLooper(object):
         playlist = self._build_playlist()
         self._prepare_to_run_playlist(playlist)
         # Main loop to play videos in the playlist and listen for file changes.
-        while True:
+        while self._running:
             # Load and play a new movie if nothing is playing.
             if not self._player.is_playing():
                 movie = playlist.get_next()
@@ -205,14 +205,26 @@ class VideoLooper(object):
             # Give the CPU some time to do other tasks.
             time.sleep(0)
 
+    def signal_quit(self, signal, frame):
+        """Shut down the program, meant to by called by signal handler."""
+        self._running = False
+        if self._player is not None:
+            self._player.stop()
+        pygame.quit()
+
 
 # Main entry point.
 def main():
+    print('Starting Adafruit Video Looper.')
     # Default config path to /boot.
     config_path = '/boot/video_looper.ini'
     # Override config path if provided as parameter.
     if len(sys.argv) == 2:
         config_path = sys.argv[1]
-    # Create video looper and run it.
+    # Create video looper.
     videolooper = VideoLooper(config_path)
+    # Configure signal handlers to quit on TERM or INT signal.
+    signal.signal(signal.SIGTERM, videolooper.signal_quit)
+    signal.signal(signal.SIGINT, videolooper.signal_quit)
+    # Run the main loop.
     videolooper.run()

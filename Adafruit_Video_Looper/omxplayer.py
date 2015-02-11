@@ -55,9 +55,9 @@ class OMXPlayer(object):
         """
         # Stop the player if it's running.
         if self._process is not None and self._process.returncode is None:
-            # process.kill() doesn't seem to work reliably if USB drive is
-            # removed, instead just run a kill -9 on it.
-            subprocess.call(['kill', '-9', str(self._process.pid)])
+            # There are a couple processes used by omxplayer, so kill both
+            # with a pkill command.
+            subprocess.call(['pkill', '-9', 'omxplayer'])
         # If a blocking timeout was specified, wait up to that amount of time
         # for the process to stop.
         start = time.time()
