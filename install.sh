@@ -11,8 +11,8 @@ fi
 
 echo "Installing dependencies..."
 echo "=========================="
-#apt-get update
-#apt-get -y install build-essential python-dev python-pip python-pygame supervisor git
+apt-get update
+apt-get -y install build-essential python-dev python-pip python-pygame supervisor git
 
 echo "Installing omxplayer..."
 echo "======================="
