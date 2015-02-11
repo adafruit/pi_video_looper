@@ -214,7 +214,7 @@ class VideoLooper(object):
 
 
 # Main entry point.
-def main():
+if __name__ == '__main__':
     print('Starting Adafruit Video Looper.')
     # Default config path to /boot.
     config_path = '/boot/video_looper.ini'

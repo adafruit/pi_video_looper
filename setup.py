@@ -10,5 +10,4 @@ setup(name              = 'Adafruit_Video_Looper',
       license           = 'GNU GPLv2',
       url               = 'https://github.com/adafruit/pi_video_looper',
       install_requires  = ['pyudev'],
-      packages          = find_packages(),
-      entry_points      = {'console_scripts': ['video_looper = Adafruit_Video_Looper:main']})
+      packages          = find_packages())
