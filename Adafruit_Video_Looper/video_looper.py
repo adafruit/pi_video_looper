@@ -61,7 +61,11 @@ class VideoLooper(object):
         self._fgcolor = map(int, self._config.get('video_looper', 'fgcolor') \
                                              .translate(None, ',') \
                                              .split())
-        # Initialize pygame and display a blank screen.
+        # Load sound volume file name value
+	self._sound_vol_file = self._config.get('omxplayer', 'sound_vol_file');
+	# default value to 0 millibels (omxplayer)
+        self._sound_vol = 0
+	# Initialize pygame and display a blank screen.
         pygame.display.init()
         pygame.font.init()
         pygame.mouse.set_visible(False)
@@ -91,6 +95,13 @@ class VideoLooper(object):
         return importlib.import_module('.' + module, 'Adafruit_Video_Looper') \
             .create_file_reader(self._config)
 
+    def _is_number(iself, s):
+	try:
+		float(s) 
+		return True
+	except ValueError:
+		return False
+    
     def _build_playlist(self):
         """Search all the file reader paths for movie files with the provided
         extensions.
@@ -104,12 +115,23 @@ class VideoLooper(object):
                 # Skip paths that don't exist or are files.
                 if not os.path.exists(path) or not os.path.isdir(path):
                     continue
+		# Ignore hidden files (useful when file loaded on usb
+		# key from an OSX computer
                 movies.extend(['{0}/{1}'.format(path.rstrip('/'), x) \
                                for x in os.listdir(path) \
                                if re.search('\.{0}$'.format(ex), x, 
-                                            flags=re.IGNORECASE)])
+                                            flags=re.IGNORECASE) and \
+				x[0] is not '.'])
+		# Get the video volume from the file in the usb key
+		sound_vol_file_path = '{0}/{1}'.format(path.rstrip('/'), self._sound_vol_file)
+		if os.path.exists(sound_vol_file_path):
+			sound_file = open(sound_vol_file_path, 'r')
+			sound_vol_string = sound_file.readline()
+			if self._is_number(sound_vol_string):
+				self._sound_vol = int(float(sound_vol_string))
         # Create a playlist with the sorted list of movies.
         return Playlist(sorted(movies))
+   
 
     def _blank_screen(self):
         """Render a blank screen filled with the background color."""
@@ -193,7 +215,7 @@ class VideoLooper(object):
                 if movie is not None:
                     # Start playing the first available movie.
                     self._print('Playing movie: {0}'.format(movie))
-                    self._player.play(movie, loop=playlist.length() == 1)                    
+                    self._player.play(movie, loop=playlist.length() == 1, vol = self._sound_vol)
             # Check for changes in the file search path (like USB drives added)
             # and rebuild the playlist.
             if self._reader.is_changed():
@@ -203,7 +225,7 @@ class VideoLooper(object):
                 playlist = self._build_playlist()
                 self._prepare_to_run_playlist(playlist)
             # Give the CPU some time to do other tasks.
-            time.sleep(0)
+            time.sleep(0.002)
 
     def signal_quit(self, signal, frame):
         """Shut down the program, meant to by called by signal handler."""
