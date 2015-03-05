@@ -34,6 +34,7 @@ rm -rf pi_hello_video
 
 echo "Installing video_looper program..."
 echo "=================================="
+mkdir -p /mnt/usbdrive0 # This is very important if you put your system in readonly after
 python setup.py install --force
 cp video_looper.ini /boot/video_looper.ini
 
