@@ -34,8 +34,8 @@ class OMXPlayer(object):
         args = ['omxplayer']
         args.extend(['-o', self._sound])  # Add sound arguments.
         args.extend(self._extra_args)     # Add extra arguments from config.
-	if vol is not 0:
-	    args.extend(['--vol', str(vol)])
+        if vol is not 0:
+            args.extend(['--vol', str(vol)])
         if loop:
             args.append('--loop')         # Add loop parameter if necessary.
         args.append(movie)                # Add movie file path.
