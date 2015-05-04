@@ -53,6 +53,7 @@ class VideoLooper(object):
         self._reader = self._load_file_reader()
         # Load other configuration values.
         self._osd = self._config.getboolean('video_looper', 'osd')
+        self._is_random = self._config.getboolean('video_looper', 'is_random')
         # Parse string of 3 comma separated values like "255, 255, 255" into 
         # list of ints for colors.
         self._bgcolor = map(int, self._config.get('video_looper', 'bgcolor') \
@@ -130,7 +131,7 @@ class VideoLooper(object):
                         if self._is_number(sound_vol_string):
                             self._sound_vol = int(float(sound_vol_string))
         # Create a playlist with the sorted list of movies.
-        return Playlist(sorted(movies))
+        return Playlist(sorted(movies), self._is_random)
 
     def _blank_screen(self):
         """Render a blank screen filled with the background color."""
