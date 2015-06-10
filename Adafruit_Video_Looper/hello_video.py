@@ -24,7 +24,7 @@ class HelloVideoPlayer(object):
         """Return list of supported file extensions."""
         return self._extensions
 
-    def play(self, movie, loop=False):
+    def play(self, movie, loop=False, **kwargs):
         """Play the provided movied file, optionally looping it repeatedly."""
         self.stop(3)  # Up to 3 second delay to let the old player stop.
         # Assemble list of arguments.
