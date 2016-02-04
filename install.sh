@@ -12,15 +12,7 @@ fi
 echo "Installing dependencies..."
 echo "=========================="
 apt-get update
-apt-get -y install build-essential python-dev python-pip python-pygame supervisor git
-
-echo "Installing omxplayer..."
-echo "======================="
-if [ -f "omxplayer-dist.tgz" ]; then
-  rm omxplayer-dist.tgz
-fi
-wget https://github.com/adafruit/omxplayer/releases/download/2%2F10%2F2015/omxplayer-dist.tgz
-tar xvfz omxplayer-dist.tgz -C /
+apt-get -y install build-essential python-dev python-pip python-pygame supervisor git omxplayer
 
 echo "Installing hello_video..."
 echo "========================="
