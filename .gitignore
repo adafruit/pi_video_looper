@@ -1,3 +1,7 @@
+#hello_video
+*.a
+*.bin
+
 omxplayer-dist.tgz*
 # Byte-compiled / optimized / DLL files
 __pycache__/

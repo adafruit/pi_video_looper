@@ -12,13 +12,18 @@ fi
 echo "Installing dependencies..."
 echo "=========================="
 apt-get update
-apt-get -y install build-essential python-dev python-pip python-pygame supervisor git omxplayer
+apt-get -y install build-essential python-dev python-pip python-pygame supervisor git omxplayer samba samba-common-bin
 
 echo "Installing hello_video..."
 echo "========================="
-git clone https://github.com/adafruit/pi_hello_video.git
 cd pi_hello_video
-./rebuild.sh
+
+make -C libs/ilclient clean
+make -C hello_video clean
+
+make -C libs/ilclient
+make -C hello_video
+
 cd hello_video
 make install
 cd ../..
