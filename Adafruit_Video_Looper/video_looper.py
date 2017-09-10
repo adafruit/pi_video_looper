@@ -63,7 +63,7 @@ class VideoLooper(object):
                                              .translate(None, ',') \
                                              .split())
 		#Get seconds for countdown from config
-		self._countdown_time = self._config.getint('video_looper', 'countdown_time')
+        self._countdown_time = self._config.getint('video_looper', 'countdown_time')
 											 
         # Load sound volume file name value
         self._sound_vol_file = self._config.get('omxplayer', 'sound_vol_file');
