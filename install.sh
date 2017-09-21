@@ -9,7 +9,11 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
-
+if [ "$*" != "no_hello_video" ]
+then
+	echo "Installing without hello_video"
+	echo "=========================="
+fi
 
 echo "Installing dependencies..."
 echo "=========================="
