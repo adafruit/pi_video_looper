@@ -54,6 +54,7 @@ class VideoLooper(object):
         # Load other configuration values.
         self._osd = self._config.getboolean('video_looper', 'osd')
         self._is_random = self._config.getboolean('video_looper', 'is_random')
+        self._keyboard_control = self._config.getboolean('video_looper', 'keyboard_control')
         # Parse string of 3 comma separated values like "255, 255, 255" into 
         # list of ints for colors.
         self._bgcolor = map(int, self._config.get('video_looper', 'bgcolor') \
@@ -190,6 +191,11 @@ class VideoLooper(object):
         sw, sh = self._screen.get_size()
         self._screen.fill(self._bgcolor)
         self._screen.blit(label, (sw/2-lw/2, sh/2-lh/2))
+        # If keyboard control is enabled, display message about it
+        if self._keyboard_control:
+            label2 = self._render_text('press ESC to quit')
+            l2w, l2h = label2.get_size()
+            self._screen.blit(label2, (sw/2-l2w/2, sh/2-l2h/2+lh))
         pygame.display.update()
 
     def _prepare_to_run_playlist(self, playlist):
@@ -224,15 +230,26 @@ class VideoLooper(object):
                 # Rebuild playlist and show countdown again (if OSD enabled).
                 playlist = self._build_playlist()
                 self._prepare_to_run_playlist(playlist)
+            # Event handling for key press, if keyboard control is enabled
+            if self._keyboard_control:
+                for event in pygame.event.get():
+                    if event.type == pygame.KEYDOWN:
+                        # If pressed key is ESC quit program
+                        if event.key == pygame.K_ESCAPE:
+                            self.quit()
             # Give the CPU some time to do other tasks.
             time.sleep(0.002)
 
-    def signal_quit(self, signal, frame):
-        """Shut down the program, meant to by called by signal handler."""
+    def quit(self):
+        """Shut down the program"""
         self._running = False
         if self._player is not None:
             self._player.stop()
         pygame.quit()
+
+    def signal_quit(self, signal, frame):
+        """Shut down the program, meant to by called by signal handler."""
+        self.quit()
 
 
 # Main entry point.
