@@ -17,7 +17,7 @@ class HelloVideoPlayer(object):
 
     def _load_config(self, config):
         self._extensions = config.get('hello_video', 'extensions') \
-                                 .translate(None, ' \t\r\n.') \
+                                 .translate(str.maketrans('', '', ' \t\r\n.')) \
                                  .split(',')
 
     def supported_extensions(self):
