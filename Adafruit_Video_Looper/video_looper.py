@@ -55,6 +55,8 @@ class VideoLooper(object):
         self._osd = self._config.getboolean('video_looper', 'osd')
         self._is_random = self._config.getboolean('video_looper', 'is_random')
         self._keyboard_control = self._config.getboolean('video_looper', 'keyboard_control')
+        # Get seconds for waittime bewteen files from config
+        self._wait_time = self._config.getint('video_looper', 'wait_time')
         # Parse string of 3 comma separated values like "255, 255, 255" into 
         # list of ints for colors.
         self._bgcolor = map(int, self._config.get('video_looper', 'bgcolor') \
@@ -218,6 +220,8 @@ class VideoLooper(object):
             # Load and play a new movie if nothing is playing.
             if not self._player.is_playing():
                 movie = playlist.get_next()
+                if self._wait_time > 0:
+                    time.sleep(self._wait_time)
                 if movie is not None:
                     # Start playing the first available movie.
                     self._print('Playing movie: {0}'.format(movie))
