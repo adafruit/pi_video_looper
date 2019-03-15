@@ -3,7 +3,7 @@
 # License: GNU GPLv2, see LICENSE.txt
 import glob
 
-from usb_drive_mounter import USBDriveMounter
+from .usb_drive_mounter import USBDriveMounter
 
 
 class USBDriveReader(object):

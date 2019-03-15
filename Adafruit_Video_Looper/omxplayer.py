@@ -17,7 +17,7 @@ class OMXPlayer(object):
 
     def _load_config(self, config):
         self._extensions = config.get('omxplayer', 'extensions') \
-                                 .translate(None, ' \t\r\n.') \
+                                 .translate(str.maketrans('', '', ' \t\r\n.')) \
                                  .split(',')
         self._extra_args = config.get('omxplayer', 'extra_args').split()
         self._sound = config.get('omxplayer', 'sound').lower()
