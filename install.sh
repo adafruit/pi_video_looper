@@ -11,7 +11,7 @@ fi
 
 echo "Installing dependencies..."
 echo "=========================="
-apt update && apt -y git install build-essential python3-dev python3 python3-pip python3-pygame supervisor omxplayer
+apt update && apt -y install git build-essential python3-dev python3 python3-pip python3-pygame supervisor omxplayer
 
 echo "Installing hello_video..."
 echo "========================="
