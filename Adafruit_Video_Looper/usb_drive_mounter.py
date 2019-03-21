@@ -8,7 +8,7 @@ import time
 import pyudev
 
 
-class USBDriveMounter(object):
+class USBDriveMounter:
     """Service for automatically mounting attached USB drives."""
 
     def __init__(self, root='/mnt/usbdrive', readonly=False):

@@ -6,7 +6,7 @@ import glob
 from .usb_drive_mounter import USBDriveMounter
 
 
-class USBDriveReader(object):
+class USBDriveReader:
 
     def __init__(self, config):
         """Create an instance of a file reader that uses the USB drive mounter

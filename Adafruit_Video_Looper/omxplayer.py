@@ -6,7 +6,7 @@ import subprocess
 import time
 
 
-class OMXPlayer(object):
+class OMXPlayer:
 
     def __init__(self, config):
         """Create an instance of a video player that runs omxplayer in the

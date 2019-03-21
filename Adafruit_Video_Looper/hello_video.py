@@ -6,7 +6,7 @@ import subprocess
 import time
 
 
-class HelloVideoPlayer(object):
+class HelloVideoPlayer:
 
     def __init__(self, config):
         """Create an instance of a video player that runs hello_video.bin in the

@@ -38,7 +38,7 @@ from .model import Playlist
 # - Future file readers and video players can be provided and referenced in the
 #   config to extend the video player use to read from different file sources
 #   or use different video players.
-class VideoLooper(object):
+class VideoLooper:
 
     def __init__(self, config_path):
         """Create an instance of the main video looper application class. Must
