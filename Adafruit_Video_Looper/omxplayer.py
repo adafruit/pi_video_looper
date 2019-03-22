@@ -51,7 +51,7 @@ class OMXPlayer:
         self._process.poll()
         return self._process.returncode is None
 
-    def stop(self, block_timeout_sec=None):
+    def stop(self, block_timeout_sec=0):
         """Stop the video player.  block_timeout_sec is how many seconds to
         block waiting for the player to stop before moving on.
         """
