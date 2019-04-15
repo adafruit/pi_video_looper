@@ -3,7 +3,7 @@
 # License: GNU GPLv2, see LICENSE.txt
 import random
 
-class Playlist(object):
+class Playlist:
     """Representation of a playlist of movies."""
 
     def __init__(self, movies, is_random):
