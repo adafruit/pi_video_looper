@@ -72,8 +72,9 @@ class VideoLooper:
         pygame.display.init()
         pygame.font.init()
         pygame.mouse.set_visible(False)
-        size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
+        size = self._size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
         self._screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
+        self._bgimage = self._load_bgimage()
         self._blank_screen()
         # Set other static internal state.
         self._extensions = self._player.supported_extensions()
@@ -97,6 +98,18 @@ class VideoLooper:
         module = self._config.get('video_looper', 'file_reader')
         return importlib.import_module('.' + module, 'Adafruit_Video_Looper') \
             .create_file_reader(self._config)
+
+    def _load_bgimage(self):
+        """Load the configured background image and return an instance of it."""
+        image = None
+        if self._config.has_option('video_looper', 'bgimage'):
+            imagepath = self._config.get('video_looper', 'bgimage')
+            if imagepath != "" and os.path.isfile(imagepath):
+                self._print('Using ' + str(imagepath) + ' as a background')
+                image = pygame.image.load(imagepath)
+                image = pygame.transform.scale(image, self._size)
+        return image
+        
 
     def _is_number(iself, s):
         try:
@@ -138,6 +151,9 @@ class VideoLooper:
     def _blank_screen(self):
         """Render a blank screen filled with the background color."""
         self._screen.fill(self._bgcolor)
+        if self._bgimage is not None:
+            rect = self._bgimage.get_rect()
+            self._screen.blit(self._bgimage, rect)
         pygame.display.update()
 
     def _render_text(self, message, font=None):
