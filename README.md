@@ -30,4 +30,30 @@ If you miss a feature just post an issue on github. (https://github.com/adafruit
 #### how to install:
 sudo ./install.sh
 
+
+#### copymode explained:
+when a usb drive with video files is plugged in, they are copied onto the rpi. (with progress bar)
+
+to protect the player from "hostile" drives a file must be present on the drive that has a filename 
+as defined in the password setting in the ini file (default: videopi)
+
+there is also a setting that controls, if files on the drive should replace the existing files or get added. (replace means that the videofiles on the rpi get deleted)
+this ini setting can be overruled by placing a file named "replace" or "add" on the drive.
+the default mode is "replace"
+
+Note: files with the same name always get overwritten
+
+#### notable things:
+* you can have one video repeated X times before playing the next by adding _repeat_Nx to the filename of a video ,
+where N is a positive number
+    * with hello_video there is no gap when a video is repeated but there is a small gap between different videos
+    * with omxplayer there will also be a short gap between the repeats
+    
+* if you have only one video then omxplayer can also loop seamlessly (and wth audio)
+
+
+#### trouble shooting:
+* nothing happening (screen flashes once) when in copymode and new drive is plugged in?
+    * check if you have the "password file" on your drive (see copymode explained above)
+
 for a detailed tutorial visit: https://learn.adafruit.com/raspberry-pi-video-looper/installation

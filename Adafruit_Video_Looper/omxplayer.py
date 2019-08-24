@@ -27,7 +27,7 @@ class OMXPlayer:
         """Return list of supported file extensions."""
         return self._extensions
 
-    def play(self, movie, loop=False, vol=0):
+    def play(self, movie, loop=0, vol=0):
         """Play the provided movied file, optionally looping it repeatedly."""
         self.stop(3)  # Up to 3 second delay to let the old player stop.
         # Assemble list of arguments.
@@ -36,7 +36,7 @@ class OMXPlayer:
         args.extend(self._extra_args)     # Add extra arguments from config.
         if vol is not 0:
             args.extend(['--vol', str(vol)])
-        if loop:
+        if loop <= -1:
             args.append('--loop')         # Add loop parameter if necessary.
         args.append(movie)                # Add movie file path.
         # Run omxplayer process and direct standard output to /dev/null.
@@ -69,6 +69,10 @@ class OMXPlayer:
             time.sleep(0)
         # Let the process be garbage collected.
         self._process = None
+
+    @staticmethod
+    def can_loop_count():
+        return False
 
 
 def create_player(config):
