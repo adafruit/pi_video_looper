@@ -8,9 +8,12 @@ If you miss a feature just post an issue on github. (https://github.com/adafruit
 
 ## Changelog
 
+#### new in v1.0.3
+ - added reload.sh to restart the looper and reload the settings from the ini
+
 #### new in v1.0.2:
  - in directory mode the directory is now monitored;
-   if the number of files have changed the playlist is regenerated
+   if the number of files changes the playlist is regenerated (usefull if the folder is filled e.g. via a network share)
  - some defaults have changed
  - new option for the countdown time (default is now 5 seconds)
  - new option for a wait time between videos (default is 0 seconds)
