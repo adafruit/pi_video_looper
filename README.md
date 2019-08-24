@@ -6,7 +6,7 @@ Easy to use out of the box but also has a lot of settings to make it fit your us
 
 If you miss a feature just post an issue on github. (https://github.com/adafruit/pi_video_looper)
 
-##Changelog
+## Changelog
 
 #### new in v1.0.2:
  - in directory mode the directory is now monitored;
@@ -17,6 +17,7 @@ If you miss a feature just post an issue on github. (https://github.com/adafruit
  - tweaks to the install script (skip the build of hello_video by using (sudo ./install.sh no_hello_video))
  - cleanup of the directory structure
  - added enable.sh analogous to disable.sh
+ - added ntfs and exfat support for the usb drive
   
 #### new in v1.0.1:
  - reworked for python3
