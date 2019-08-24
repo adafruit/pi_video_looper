@@ -1,7 +1,8 @@
 # Copyright 2015 Adafruit Industries.
 # Author: Tony DiCola
 # License: GNU GPLv2, see LICENSE.txt
-import ConfigParser
+
+import configparser
 import importlib
 import os
 import re
@@ -11,7 +12,7 @@ import time
 
 import pygame
 
-from model import Playlist
+from .model import Playlist
 
 
 # Basic video looper architecure:
@@ -37,14 +38,14 @@ from model import Playlist
 # - Future file readers and video players can be provided and referenced in the
 #   config to extend the video player use to read from different file sources
 #   or use different video players.
-class VideoLooper(object):
+class VideoLooper:
 
     def __init__(self, config_path):
         """Create an instance of the main video looper application class. Must
         pass path to a valid video looper ini configuration file.
         """
         # Load the configuration.
-        self._config = ConfigParser.SafeConfigParser()
+        self._config = configparser.ConfigParser()
         if len(self._config.read(config_path)) == 0:
             raise RuntimeError('Failed to find configuration file at {0}, is the application properly installed?'.format(config_path))
         self._console_output = self._config.getboolean('video_looper', 'console_output')
@@ -54,17 +55,19 @@ class VideoLooper(object):
         # Load other configuration values.
         self._osd = self._config.getboolean('video_looper', 'osd')
         self._is_random = self._config.getboolean('video_looper', 'is_random')
+        self._keyboard_control = self._config.getboolean('video_looper', 'keyboard_control')
+        # Get seconds for waittime bewteen files from config
+        self._wait_time = self._config.getint('video_looper', 'wait_time')
         # Parse string of 3 comma separated values like "255, 255, 255" into 
         # list of ints for colors.
-        self._bgcolor = map(int, self._config.get('video_looper', 'bgcolor') \
-                                             .translate(None, ',') \
-                                             .split())
-        self._fgcolor = map(int, self._config.get('video_looper', 'fgcolor') \
-                                             .translate(None, ',') \
-                                             .split())
-		#Get seconds for countdown from config
+        self._bgcolor = list(map(int, self._config.get('video_looper', 'bgcolor')
+                                             .translate(str.maketrans('','', ','))
+                                             .split()))
+        self._fgcolor = list(map(int, self._config.get('video_looper', 'fgcolor')
+                                             .translate(str.maketrans('','', ','))
+                                             .split()))
+        #Get seconds for countdown from config
         self._countdown_time = self._config.getint('video_looper', 'countdown_time')
-											 
         # Load sound volume file name value
         self._sound_vol_file = self._config.get('omxplayer', 'sound_vol_file');
         # default value to 0 millibels (omxplayer)
@@ -73,8 +76,9 @@ class VideoLooper(object):
         pygame.display.init()
         pygame.font.init()
         pygame.mouse.set_visible(False)
-        size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
+        size = self._size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
         self._screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
+        self._bgimage = self._load_bgimage()
         self._blank_screen()
         # Set other static internal state.
         self._extensions = self._player.supported_extensions()
@@ -98,6 +102,18 @@ class VideoLooper(object):
         module = self._config.get('video_looper', 'file_reader')
         return importlib.import_module('.' + module, 'Adafruit_Video_Looper') \
             .create_file_reader(self._config)
+
+    def _load_bgimage(self):
+        """Load the configured background image and return an instance of it."""
+        image = None
+        if self._config.has_option('video_looper', 'bgimage'):
+            imagepath = self._config.get('video_looper', 'bgimage')
+            if imagepath != "" and os.path.isfile(imagepath):
+                self._print('Using ' + str(imagepath) + ' as a background')
+                image = pygame.image.load(imagepath)
+                image = pygame.transform.scale(image, self._size)
+        return image
+        
 
     def _is_number(iself, s):
         try:
@@ -139,6 +155,9 @@ class VideoLooper(object):
     def _blank_screen(self):
         """Render a blank screen filled with the background color."""
         self._screen.fill(self._bgcolor)
+        if self._bgimage is not None:
+            rect = self._bgimage.get_rect()
+            self._screen.blit(self._bgimage, rect)
         pygame.display.update()
 
     def _render_text(self, message, font=None):
@@ -193,6 +212,11 @@ class VideoLooper(object):
         sw, sh = self._screen.get_size()
         self._screen.fill(self._bgcolor)
         self._screen.blit(label, (sw/2-lw/2, sh/2-lh/2))
+        # If keyboard control is enabled, display message about it
+        if self._keyboard_control:
+            label2 = self._render_text('press ESC to quit')
+            l2w, l2h = label2.get_size()
+            self._screen.blit(label2, (sw/2-l2w/2, sh/2-l2h/2+lh))
         pygame.display.update()
 
     def _prepare_to_run_playlist(self, playlist):
@@ -215,6 +239,8 @@ class VideoLooper(object):
             # Load and play a new movie if nothing is playing.
             if not self._player.is_playing():
                 movie = playlist.get_next()
+                if self._wait_time > 0:
+                    time.sleep(self._wait_time)
                 if movie is not None:
                     # Start playing the first available movie.
                     self._print('Playing movie: {0}'.format(movie))
@@ -227,15 +253,26 @@ class VideoLooper(object):
                 # Rebuild playlist and show countdown again (if OSD enabled).
                 playlist = self._build_playlist()
                 self._prepare_to_run_playlist(playlist)
+            # Event handling for key press, if keyboard control is enabled
+            if self._keyboard_control:
+                for event in pygame.event.get():
+                    if event.type == pygame.KEYDOWN:
+                        # If pressed key is ESC quit program
+                        if event.key == pygame.K_ESCAPE:
+                            self.quit()
             # Give the CPU some time to do other tasks.
             time.sleep(0.002)
 
-    def signal_quit(self, signal, frame):
-        """Shut down the program, meant to by called by signal handler."""
+    def quit(self):
+        """Shut down the program"""
         self._running = False
         if self._player is not None:
             self._player.stop()
         pygame.quit()
+
+    def signal_quit(self, signal, frame):
+        """Shut down the program, meant to by called by signal handler."""
+        self.quit()
 
 
 # Main entry point.

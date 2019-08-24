@@ -8,7 +8,7 @@ import time
 import pyudev
 
 
-class USBDriveMounter(object):
+class USBDriveMounter:
     """Service for automatically mounting attached USB drives."""
 
     def __init__(self, root='/mnt/usbdrive', readonly=False):
@@ -72,9 +72,9 @@ if __name__ == '__main__':
     drive_mounter = USBDriveMounter(readonly=True)
     drive_mounter.mount_all()
     drive_mounter.start_monitor()
-    print 'Listening for USB drive changes (press Ctrl-C to quite)...'
+    print ('Listening for USB drive changes (press Ctrl-C to quit)...')
     while True:
         if drive_mounter.poll_changes():
-            print 'USB drives changed!'
+            print ('USB drives changed!')
             drive_mounter.mount_all()
         time.sleep(0)

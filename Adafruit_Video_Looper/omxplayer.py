@@ -6,7 +6,7 @@ import subprocess
 import time
 
 
-class OMXPlayer(object):
+class OMXPlayer:
 
     def __init__(self, config):
         """Create an instance of a video player that runs omxplayer in the
@@ -17,7 +17,7 @@ class OMXPlayer(object):
 
     def _load_config(self, config):
         self._extensions = config.get('omxplayer', 'extensions') \
-                                 .translate(None, ' \t\r\n.') \
+                                 .translate(str.maketrans('', '', ' \t\r\n.')) \
                                  .split(',')
         self._extra_args = config.get('omxplayer', 'extra_args').split()
         self._sound = config.get('omxplayer', 'sound').lower()
@@ -51,7 +51,7 @@ class OMXPlayer(object):
         self._process.poll()
         return self._process.returncode is None
 
-    def stop(self, block_timeout_sec=None):
+    def stop(self, block_timeout_sec=0):
         """Stop the video player.  block_timeout_sec is how many seconds to
         block waiting for the player to stop before moving on.
         """
