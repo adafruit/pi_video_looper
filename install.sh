@@ -19,7 +19,7 @@ then
 	echo "Installing hello_video..."
 	echo "========================="
 	apt -y install git build-essential python3-dev
-	git clone https://github.com/adafruit/pi_hello_video.gi
+	git clone https://github.com/adafruit/pi_hello_video
 	cd pi_hello_video
 	./rebuild.sh
 	cd hello_video
