@@ -9,36 +9,33 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
-if [ "$*" != "no_hello_video" ]
-then
-	echo "Installing without hello_video"
-	echo "=========================="
-fi
 
 echo "Installing dependencies..."
 echo "=========================="
-apt-get update
-apt-get -y install python-dev python-pip python-pygame supervisor git omxplayer
+apt update && apt -y install python3 python3-pip python3-pygame supervisor omxplayer ntfs-3g exfat-fuse
 
-#check if hello_video should be installed
 if [ "$*" != "no_hello_video" ]
 then
 	echo "Installing hello_video..."
 	echo "========================="
-	apt-get -y install build-essential
-	git clone https://github.com/adafruit/pi_hello_video.git
+	apt -y install git build-essential python3-dev
+	git clone https://github.com/adafruit/pi_hello_video.gi
 	cd pi_hello_video
 	./rebuild.sh
 	cd hello_video
 	make install
 	cd ../..
 	rm -rf pi_hello_video
+else
+    echo "hello_video was not installed"
+    echo "=========================="
 fi
 
 echo "Installing video_looper program..."
 echo "=================================="
 mkdir -p /mnt/usbdrive0 # This is very important if you put your system in readonly after
-python setup.py install --force
+pip3 install setuptools
+python3 setup.py install --force
 cp video_looper.ini /boot/video_looper.ini
 
 echo "Configuring video_looper to run on start..."

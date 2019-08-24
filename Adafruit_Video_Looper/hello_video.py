@@ -6,7 +6,7 @@ import subprocess
 import time
 
 
-class HelloVideoPlayer(object):
+class HelloVideoPlayer:
 
     def __init__(self, config):
         """Create an instance of a video player that runs hello_video.bin in the
@@ -17,7 +17,7 @@ class HelloVideoPlayer(object):
 
     def _load_config(self, config):
         self._extensions = config.get('hello_video', 'extensions') \
-                                 .translate(None, ' \t\r\n.') \
+                                 .translate(str.maketrans('', '', ' \t\r\n.')) \
                                  .split(',')
 
     def supported_extensions(self):
@@ -44,7 +44,7 @@ class HelloVideoPlayer(object):
         self._process.poll()
         return self._process.returncode is None
 
-    def stop(self, block_timeout_sec=None):
+    def stop(self, block_timeout_sec=0):
         """Stop the video player.  block_timeout_sec is how many seconds to
         block waiting for the player to stop before moving on.
         """
