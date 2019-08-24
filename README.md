@@ -6,7 +6,18 @@ Easy to use out of the box but also has a lot of settings to make it fit your us
 
 If you miss a feature just post an issue on github. (https://github.com/adafruit/pi_video_looper)
 
+##Changelog
 
+#### new in v1.0.2:
+ - in directory mode the directory is now monitored;
+   if the number of files have changed the playlist is regenerated
+ - some defaults have changed
+ - new option for the countdown time (default is now 5 seconds)
+ - new option for a wait time between videos (default is 0 seconds)
+ - tweaks to the install script (skip the build of hello_video by using (sudo ./install.sh no_hello_video))
+ - cleanup of the directory structure
+ - added enable.sh analogous to disable.sh
+  
 #### new in v1.0.1:
  - reworked for python3
  - keyboard control (quiting the player)
