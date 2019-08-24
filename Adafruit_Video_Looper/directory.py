@@ -36,6 +36,6 @@ class DirectoryReader:
         return len(os.listdir(self._path))
 
 
-def create_file_reader(config):
+def create_file_reader(config, screen):
     """Create new file reader based on reading a directory on disk."""
     return DirectoryReader(config)

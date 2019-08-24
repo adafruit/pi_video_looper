@@ -11,7 +11,7 @@ import pyudev
 class USBDriveMounter:
     """Service for automatically mounting attached USB drives."""
 
-    def __init__(self, root='/mnt/usbdrive', readonly=False):
+    def __init__(self, root='/mnt/usbdrive', readonly=True):
         """Create an instance of the USB drive mounter service.  Root is an
         optional parameter which specifies the location and file name prefix for
         mounted drives (a number will be appended to each mounted drive file
@@ -30,12 +30,11 @@ class USBDriveMounter:
 
     def mount_all(self):
         """Mount all attached USB drives.  Readonly is a boolean that specifies
-        if the drives should be mounted read only (defaults to false).
+        if the drives should be mounted read only (defaults to true).
         """
         self.remove_all()
         # Enumerate USB drive partitions by path like /dev/sda1, etc.
-        nodes = [x.device_node for x in self._context.list_devices(subsystem='block', 
-                                                                   DEVTYPE='partition') \
+        nodes = [x.device_node for x in self._context.list_devices(subsystem='block', DEVTYPE='partition')
                  if 'ID_BUS' in x and x['ID_BUS'] == 'usb']
         # Mount each drive under the mount root.
         for i, node in enumerate(nodes):
@@ -46,6 +45,13 @@ class USBDriveMounter:
                 args.append('-r')
             args.extend([node, path])
             subprocess.check_call(args)
+
+        return nodes
+
+    def has_nodes(self):
+        nodes = [x.device_node for x in self._context.list_devices(subsystem='block', DEVTYPE='partition')
+                 if 'ID_BUS' in x and x['ID_BUS'] == 'usb']
+        return nodes != []
 
     def start_monitor(self):
         """Initialize monitoring of USB drive changes."""
