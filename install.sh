@@ -33,6 +33,7 @@ fi
 
 echo "Installing video_looper program..."
 echo "=================================="
+cd "$(dirname "$0")"
 mkdir -p /mnt/usbdrive0 # This is very important if you put your system in readonly after
 pip3 install setuptools
 python3 setup.py install --force
