@@ -1,6 +1,8 @@
 # Copyright 2015 Adafruit Industries.
 # Author: Tony DiCola
 # License: GNU GPLv2, see LICENSE.txt
+import os
+
 class DirectoryReader:
 
     def __init__(self, config):
@@ -8,6 +10,7 @@ class DirectoryReader:
         directory on disk.
         """
         self._load_config(config)
+        self._filecount = self.count_files()
 
     def _load_config(self, config):
         self._path = config.get('directory', 'path')
@@ -17,17 +20,20 @@ class DirectoryReader:
         return [self._path]
 
     def is_changed(self):
-        """Return true if the file search paths have changed."""
-        # For now just return false and assume the path never changes.  In the
-        # future it might be interesting to watch for file changes and return
-        # true if new files are added/removed from the directory.  This is 
-        # called in a tight loop of the main program so it needs to be fast and
-        # not resource intensive.
-        return False
+        """Return true if the number of files in the paths have changed."""
+        current_count = self.count_files()
+        if current_count != self._filecount:
+            self._filecount = current_count
+            return True
+        else:
+            return False
 
     def idle_message(self):
         """Return a message to display when idle and no files are found."""
         return 'No files found in {0}'.format(self._path)
+
+    def count_files(self):
+        return len(os.listdir(self._path))
 
 
 def create_file_reader(config):
