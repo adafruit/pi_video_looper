@@ -302,6 +302,8 @@ class VideoLooper:
                         if event.key == pygame.K_ESCAPE:
                             self._print("ESC was pressed. quitting...")
                             self.quit()
+                        if event.key == pygame.K_x:
+                            self._player.stop(1)
             # Give the CPU some time to do other tasks.
             time.sleep(0.002)
 
