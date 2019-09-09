@@ -10,6 +10,7 @@ import sys
 import signal
 import time
 import pygame
+import threading
 
 from .model import Playlist, Movie
 
@@ -83,8 +84,15 @@ class VideoLooper:
         self._small_font = pygame.font.Font(None, 50)
         self._big_font   = pygame.font.Font(None, 250)
         self._running    = True
+        self._stopping   = False
         #used for not waiting the first time
         self._firstStart = True
+
+        # start keyboard handler thread:
+        # Event handling for key press, if keyboard control is enabled
+        if self._keyboard_control:
+            self._keyboard_thread = threading.Thread(target=self._handle_keyboard_shortcuts)
+            self._keyboard_thread.start()
 
     def _print(self, message):
         """Print message to standard output if console output is enabled."""
@@ -245,20 +253,21 @@ class VideoLooper:
             self._idle_message()
 
     def _handle_keyboard_shortcuts(self):
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                # If pressed key is ESC quit program
-                if event.key == pygame.K_ESCAPE:
-                    if self._running:
-                        self._print("ESC was pressed. stopping...")
-                        self._running = False;
+        while not self._stopping:
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    # If pressed key is ESC quit program
+                    if event.key == pygame.K_ESCAPE:
+                        if self._running:
+                            self._print("ESC was pressed. stopping...")
+                            self._running = False
+                            self._player.stop(3)
+                        else:
+                            self._print("ESC was pressed. starting...")
+                            self._running = True
+                    if event.key == pygame.K_s:
+                        self._print("s was pressed. skipping...")
                         self._player.stop(3)
-                    else:
-                        self._print("ESC was pressed. starting...")
-                        self._running = True;
-                if event.key == pygame.K_s:
-                    self._print("s was pressed. skipping...")
-                    self._player.stop(3)
 
     def run(self):
         """Main program loop.  Will never return!"""
@@ -310,9 +319,7 @@ class VideoLooper:
                 playlist = self._build_playlist()
                 self._prepare_to_run_playlist(playlist)
                 movie = playlist.get_next()
-            # Event handling for key press, if keyboard control is enabled
-            if self._keyboard_control:
-                self._handle_keyboard_shortcuts()
+
             # Give the CPU some time to do other tasks.
             time.sleep(0.002)
 
@@ -320,6 +327,8 @@ class VideoLooper:
         """Shut down the program"""
         self._print("quitting Video Looper")
         self._running = False
+        self._stopping = True
+        self._keyboard_thread.join()
         if self._player is not None:
             self._player.stop()
         pygame.quit()
@@ -328,7 +337,6 @@ class VideoLooper:
         """Shut down the program, meant to by called by signal handler."""
         self._print("received signal to quit")
         self.quit()
-
 
 # Main entry point.
 if __name__ == '__main__':
