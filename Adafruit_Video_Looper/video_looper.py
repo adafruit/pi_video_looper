@@ -331,10 +331,11 @@ class VideoLooper:
         """Shut down the program"""
         self._print("quitting Video Looper")
         self._running = False
-        self._keyboard_thread.join()
         if self._player is not None:
             self._player.stop()
         pygame.quit()
+        self._keyboard_thread.join(1)
+
 
     def signal_quit(self, signal, frame):
         """Shut down the program, meant to by called by signal handler."""
