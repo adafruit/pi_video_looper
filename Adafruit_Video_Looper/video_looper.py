@@ -10,6 +10,7 @@ import sys
 import signal
 import time
 import pygame
+import threading
 
 from .model import Playlist, Movie
 
@@ -83,8 +84,15 @@ class VideoLooper:
         self._small_font = pygame.font.Font(None, 50)
         self._big_font   = pygame.font.Font(None, 250)
         self._running    = True
+        self._playbackStopped = False
         #used for not waiting the first time
         self._firstStart = True
+
+        # start keyboard handler thread:
+        # Event handling for key press, if keyboard control is enabled
+        if self._keyboard_control:
+            self._keyboard_thread = threading.Thread(target=self._handle_keyboard_shortcuts)
+            self._keyboard_thread.start()
 
     def _print(self, message):
         """Print message to standard output if console output is enabled."""
@@ -244,6 +252,27 @@ class VideoLooper:
         else:
             self._idle_message()
 
+    def _handle_keyboard_shortcuts(self):
+        while self._running:
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    # If pressed key is ESC quit program
+                    if event.key == pygame.K_ESCAPE:
+                        self._print("ESC was pressed. quitting...")
+                        self.quit()
+                    if event.key == pygame.K_k:
+                        self._print("k was pressed. skipping...")
+                        self._player.stop(3)
+                    if event.key == pygame.K_s:
+                        if self._playbackStopped:
+                            self._print("s was pressed. starting...")
+                            self._playbackStopped = False
+                        else:
+                            self._print("s was pressed. stopping...")
+                            self._playbackStopped = True
+                            self._player.stop(3)
+
+
     def run(self):
         """Main program loop.  Will never return!"""
         # Get playlist of movies to play from file reader.
@@ -253,7 +282,7 @@ class VideoLooper:
         # Main loop to play videos in the playlist and listen for file changes.
         while self._running:
             # Load and play a new movie if nothing is playing.
-            if not self._player.is_playing():
+            if not self._player.is_playing() and not self._playbackStopped:
                 if movie is not None: #just to avoid errors
 
                     if movie.playcount >= movie.repeats:
@@ -285,7 +314,7 @@ class VideoLooper:
 
             # Check for changes in the file search path (like USB drives added)
             # and rebuild the playlist.
-            if self._reader.is_changed():
+            if self._reader.is_changed() and not self._playbackStopped:
                 self._print("reader changed, stopping player")
                 self._player.stop(3)  # Up to 3 second delay waiting for old 
                                       # player to stop.
@@ -294,14 +323,7 @@ class VideoLooper:
                 playlist = self._build_playlist()
                 self._prepare_to_run_playlist(playlist)
                 movie = playlist.get_next()
-            # Event handling for key press, if keyboard control is enabled
-            if self._keyboard_control:
-                for event in pygame.event.get():
-                    if event.type == pygame.KEYDOWN:
-                        # If pressed key is ESC quit program
-                        if event.key == pygame.K_ESCAPE:
-                            self._print("ESC was pressed. quitting...")
-                            self.quit()
+
             # Give the CPU some time to do other tasks.
             time.sleep(0.002)
 
@@ -312,12 +334,14 @@ class VideoLooper:
         if self._player is not None:
             self._player.stop()
         pygame.quit()
+        if self._keyboard_control:
+            self._keyboard_thread.join(1)
+
 
     def signal_quit(self, signal, frame):
         """Shut down the program, meant to by called by signal handler."""
         self._print("received signal to quit")
         self.quit()
-
 
 # Main entry point.
 if __name__ == '__main__':

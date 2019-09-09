@@ -8,6 +8,14 @@ If you miss a feature just post an issue on github. (https://github.com/adafruit
 
 ## Changelog
 
+#### new in v1.0.4
+ - new keyboard shortcut "k"  
+   skips the playback of current video (if a video is set to repeat it only skips one iteration)
+ - new keyboard shortcut "s"
+   stops the current playback. pressing s again starts the playback
+ - reworked shortcut handling 
+ 
+
 #### new in v1.0.3
  - **major new feature:** copymode  
  files will be copied from the usb stick to the player (with fancy progress bar)  
