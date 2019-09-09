@@ -244,6 +244,22 @@ class VideoLooper:
         else:
             self._idle_message()
 
+    def _handle_keyboard_shortcuts(self):
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                # If pressed key is ESC quit program
+                if event.key == pygame.K_ESCAPE:
+                    if self._running:
+                        self._print("ESC was pressed. stopping...")
+                        self._running = False;
+                        self._player.stop(3)
+                    else:
+                        self._print("ESC was pressed. starting...")
+                        self._running = True;
+                if event.key == pygame.K_s:
+                    self._print("s was pressed. skipping...")
+                    self._player.stop(3)
+
     def run(self):
         """Main program loop.  Will never return!"""
         # Get playlist of movies to play from file reader.
@@ -296,14 +312,7 @@ class VideoLooper:
                 movie = playlist.get_next()
             # Event handling for key press, if keyboard control is enabled
             if self._keyboard_control:
-                for event in pygame.event.get():
-                    if event.type == pygame.KEYDOWN:
-                        # If pressed key is ESC quit program
-                        if event.key == pygame.K_ESCAPE:
-                            self._print("ESC was pressed. quitting...")
-                            self.quit()
-                        if event.key == pygame.K_x:
-                            self._player.stop(1)
+                self._handle_keyboard_shortcuts()
             # Give the CPU some time to do other tasks.
             time.sleep(0.002)
 
