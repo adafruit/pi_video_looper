@@ -84,7 +84,7 @@ class VideoLooper:
         self._small_font = pygame.font.Font(None, 50)
         self._big_font   = pygame.font.Font(None, 250)
         self._running    = True
-        self._stopping   = False
+        self._playbackStopped = False
         #used for not waiting the first time
         self._firstStart = True
 
@@ -253,21 +253,25 @@ class VideoLooper:
             self._idle_message()
 
     def _handle_keyboard_shortcuts(self):
-        while not self._stopping:
+        while self._running:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     # If pressed key is ESC quit program
                     if event.key == pygame.K_ESCAPE:
-                        if self._running:
-                            self._print("ESC was pressed. stopping...")
-                            self._running = False
-                            self._player.stop(3)
-                        else:
-                            self._print("ESC was pressed. starting...")
-                            self._running = True
-                    if event.key == pygame.K_s:
-                        self._print("s was pressed. skipping...")
+                        self._print("ESC was pressed. quitting...")
+                        self.quit()
+                    if event.key == pygame.K_k:
+                        self._print("k was pressed. skipping...")
                         self._player.stop(3)
+                    if event.key == pygame.K_s:
+                        if self._playbackStopped:
+                            self._print("s was pressed. starting...")
+                            self._playbackStopped = False
+                        else:
+                            self._print("s was pressed. stopping...")
+                            self._playbackStopped = True
+                            self._player.stop(3)
+
 
     def run(self):
         """Main program loop.  Will never return!"""
@@ -278,7 +282,7 @@ class VideoLooper:
         # Main loop to play videos in the playlist and listen for file changes.
         while self._running:
             # Load and play a new movie if nothing is playing.
-            if not self._player.is_playing():
+            if not self._player.is_playing() and not self._playbackStopped:
                 if movie is not None: #just to avoid errors
 
                     if movie.playcount >= movie.repeats:
@@ -310,7 +314,7 @@ class VideoLooper:
 
             # Check for changes in the file search path (like USB drives added)
             # and rebuild the playlist.
-            if self._reader.is_changed():
+            if self._reader.is_changed() and not self._playbackStopped:
                 self._print("reader changed, stopping player")
                 self._player.stop(3)  # Up to 3 second delay waiting for old 
                                       # player to stop.
@@ -327,7 +331,6 @@ class VideoLooper:
         """Shut down the program"""
         self._print("quitting Video Looper")
         self._running = False
-        self._stopping = True
         self._keyboard_thread.join()
         if self._player is not None:
             self._player.stop()
