@@ -8,4 +8,4 @@ fi
 
 # Disable any supervisor process that start video looper.
 mv /etc/supervisor/conf.d/video_looper.conf.disabled /etc/supervisor/conf.d/video_looper.conf
-supervisorctl start video_looper
+supervisorctl reload
