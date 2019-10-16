@@ -42,7 +42,7 @@ class OMXPlayer:
                 h, m = divmod(m, 60)
                 self._subtitle_header = '00:00:00,00 --> {:d}:{:02d}:{:02d},00\n'.format(h, m, s)
             else:
-                self._subtitle_header = '00:00:00,00 --> 999:59:59,00\n'
+                self._subtitle_header = '00:00:00,00 --> 99:59:59,00\n'
             self._subtitle_size = config.get('omxplayer', 'title_size')
 
     def supported_extensions(self):
