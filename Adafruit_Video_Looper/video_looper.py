@@ -141,6 +141,9 @@ class VideoLooper:
                         raise RuntimeError('Playlist path {0} does not exist.'.format(playlist_path))
                 else:
                     paths = self._reader.search_paths()
+                    if not paths:
+                        return Playlist([])
+                    
                     for path in paths:
                         maybe_playlist_path = os.path.join(path, playlist_path)
                         if os.path.isfile(maybe_playlist_path):
