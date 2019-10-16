@@ -49,7 +49,7 @@ class OMXPlayer:
         """Return list of supported file extensions."""
         return self._extensions
 
-    def play(self, movie, title=None, loop=0, vol=0):
+    def play(self, movie, loop=None, vol=0):
         """Play the provided movie file, optionally looping it repeatedly."""
         self.stop(3)  # Up to 3 second delay to let the old player stop.
         # Assemble list of arguments.
@@ -58,15 +58,17 @@ class OMXPlayer:
         args.extend(self._extra_args)     # Add extra arguments from config.
         if vol is not 0:
             args.extend(['--vol', str(vol)])
+        if loop is None:
+            loop = movie.repeats
         if loop <= -1:
             args.append('--loop')  # Add loop parameter if necessary.
-        if self._show_titles and title:
+        if self._show_titles and movie.title:
             srt_path = os.path.join(self._get_temp_directory(), 'video_looper.srt')
             with open(srt_path, 'w') as f:
                 f.write(self._subtitle_header)
-                f.write(title)
+                f.write(movie.title)
             args.extend(['--subtitles', srt_path, '--font-size', self._subtitle_size, '--align', 'center'])
-        args.append(movie)                # Add movie file path.
+        args.append(movie.filename)       # Add movie file path.
         # Run omxplayer process and direct standard output to /dev/null.
         self._process = subprocess.Popen(args,
                                          stdout=open(os.devnull, 'wb'),
