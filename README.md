@@ -8,6 +8,18 @@ If you miss a feature just post an issue on github. (https://github.com/adafruit
 
 ## Changelog
 
+#### new in v1.0.5
+
+ - Support for M3U playlists.  
+   To be enabled by specifying a playlist path in config key `playlist.path`. It can be absolute, or relative to the `file_reader`'s search directories (`directory`: path given, `usb_drive`: all USB drives' root).  
+   Paths in the playlist can be absolute, or relative to the playlist's path.  
+   Playlists can include a title for each item (`#EXTINF` directive); see next point.
+ - Support for video titles (OMXPlayer only).  
+   Can display a text on top of the videos.  
+   To be enabled by config key `omxplayer.show_titles`.  
+   By default, titles are simply the videos' filename (without extension).  
+   If a M3U playlist is used, then titles come from the playlist instead.
+
 #### new in v1.0.4
  - new keyboard shortcut "k"  
    skips the playback of current video (if a video is set to repeat it only skips one iteration)
