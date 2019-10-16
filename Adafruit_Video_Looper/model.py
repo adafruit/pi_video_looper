@@ -2,13 +2,16 @@
 # Author: Tony DiCola
 # License: GNU GPLv2, see LICENSE.txt
 import random
+from typing import Optional
+
 
 class Movie:
     """Representation of a movie"""
 
-    def __init__(self, filename: str, repeats: int = 1):
+    def __init__(self, filename: str, title: Optional[str] = None, repeats: int = 1):
         """Create a playlist from the provided list of movies."""
         self.filename = filename
+        self.title = title
         self.repeats = int(repeats)
         self.playcount = 0
 
@@ -29,21 +32,20 @@ class Movie:
         return self.filename == other.filename
 
     def __str__(self):
-        return self.filename
+        return "{0} ({1})".format(self.filename, self.title) if self.title else self.filename
 
     def __repr__(self):
-        return repr((self.filename, self.repeats))
+        return repr((self.filename, self.title, self.repeats))
 
 class Playlist:
     """Representation of a playlist of movies."""
 
-    def __init__(self, movies, is_random):
+    def __init__(self, movies):
         """Create a playlist from the provided list of movies."""
         self._movies = movies
         self._index = None
-        self._is_random = is_random
 
-    def get_next(self) -> Movie:
+    def get_next(self, is_random) -> Movie:
         """Get the next movie in the playlist. Will loop to start of playlist
         after reaching end.
         """
@@ -51,7 +53,7 @@ class Playlist:
         if len(self._movies) == 0:
             return None
         # Start Random movie
-        if self._is_random:
+        if is_random:
             self._index = random.randrange(0, self.length())
         else:
             # Start at the first movie and increment through them in order.

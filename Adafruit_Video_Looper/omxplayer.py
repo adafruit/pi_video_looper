@@ -2,7 +2,9 @@
 # Author: Tony DiCola
 # License: GNU GPLv2, see LICENSE.txt
 import os
+import shutil
 import subprocess
+import tempfile
 import time
 
 
@@ -13,7 +15,17 @@ class OMXPlayer:
         background.
         """
         self._process = None
+        self._temp_directory = None
         self._load_config(config)
+
+    def __del__(self):
+        if self._temp_directory:
+            shutil.rmtree(self._temp_directory)
+
+    def _get_temp_directory(self):
+        if not self._temp_directory:
+            self._temp_directory = tempfile.mkdtemp()
+        return self._temp_directory
 
     def _load_config(self, config):
         self._extensions = config.get('omxplayer', 'extensions') \
@@ -22,13 +34,23 @@ class OMXPlayer:
         self._extra_args = config.get('omxplayer', 'extra_args').split()
         self._sound = config.get('omxplayer', 'sound').lower()
         assert self._sound in ('hdmi', 'local', 'both'), 'Unknown omxplayer sound configuration value: {0} Expected hdmi, local, or both.'.format(self._sound)
+        self._show_titles = config.getboolean('omxplayer', 'show_titles')
+        if self._show_titles:
+            title_duration = config.getint('omxplayer', 'title_duration')
+            if title_duration >= 0:
+                m, s = divmod(title_duration, 60)
+                h, m = divmod(m, 60)
+                self._subtitle_header = '00:00:00,00 --> {:d}:{:02d}:{:02d},00\n'.format(h, m, s)
+            else:
+                self._subtitle_header = '00:00:00,00 --> 999:59:59,00\n'
+            self._subtitle_size = config.get('omxplayer', 'title_size')
 
     def supported_extensions(self):
         """Return list of supported file extensions."""
         return self._extensions
 
-    def play(self, movie, loop=0, vol=0):
-        """Play the provided movied file, optionally looping it repeatedly."""
+    def play(self, movie, title=None, loop=0, vol=0):
+        """Play the provided movie file, optionally looping it repeatedly."""
         self.stop(3)  # Up to 3 second delay to let the old player stop.
         # Assemble list of arguments.
         args = ['omxplayer']
@@ -37,7 +59,13 @@ class OMXPlayer:
         if vol is not 0:
             args.extend(['--vol', str(vol)])
         if loop <= -1:
-            args.append('--loop')         # Add loop parameter if necessary.
+            args.append('--loop')  # Add loop parameter if necessary.
+        if self._show_titles and title:
+            srt_path = os.path.join(self._get_temp_directory(), 'video_looper.srt')
+            with open(srt_path, 'w') as f:
+                f.write(self._subtitle_header)
+                f.write(title)
+            args.extend(['--subtitles', srt_path, '--font-size', self._subtitle_size, '--align', 'center'])
         args.append(movie)                # Add movie file path.
         # Run omxplayer process and direct standard output to /dev/null.
         self._process = subprocess.Popen(args,
