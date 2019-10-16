@@ -43,7 +43,6 @@ class OMXPlayer:
                 self._subtitle_header = '00:00:00,00 --> {:d}:{:02d}:{:02d},00\n'.format(h, m, s)
             else:
                 self._subtitle_header = '00:00:00,00 --> 99:59:59,00\n'
-            self._subtitle_size = config.get('omxplayer', 'title_size')
 
     def supported_extensions(self):
         """Return list of supported file extensions."""
@@ -67,7 +66,7 @@ class OMXPlayer:
             with open(srt_path, 'w') as f:
                 f.write(self._subtitle_header)
                 f.write(movie.title)
-            args.extend(['--subtitles', srt_path, '--font-size', self._subtitle_size, '--align', 'center'])
+            args.extend(['--subtitles', srt_path])
         args.append(movie.filename)       # Add movie file path.
         # Run omxplayer process and direct standard output to /dev/null.
         self._process = subprocess.Popen(args,
