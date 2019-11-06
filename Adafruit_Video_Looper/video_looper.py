@@ -13,6 +13,8 @@ import pygame
 import threading
 
 from .model import Playlist, Movie
+from .playlist_builders import build_playlist_m3u
+
 
 # Basic video looper architecure:
 #
@@ -120,14 +122,55 @@ class VideoLooper:
                 image = pygame.transform.scale(image, self._size)
         return image
 
-    def _is_number(iself, s):
+    def _is_number(self, s):
         try:
             float(s) 
             return True
         except ValueError:
             return False
-    
+
     def _build_playlist(self):
+        """Try to build a playlist (object) from a playlist (file).
+        Falls back to an auto-generated playlist with all files.
+        """
+        if self._config.has_option('playlist', 'path'):
+            playlist_path = self._config.get('playlist', 'path')
+            if playlist_path != "":
+                if os.path.isabs(playlist_path):
+                    if not os.path.isfile(playlist_path):
+                        self._print('Playlist path {0} does not exist.'.format(playlist_path))
+                        return self._build_playlist_from_all_files()
+                        #raise RuntimeError('Playlist path {0} does not exist.'.format(playlist_path))
+                else:
+                    paths = self._reader.search_paths()
+                    
+                    if not paths:
+                        return Playlist([])
+                    
+                    for path in paths:
+                        maybe_playlist_path = os.path.join(path, playlist_path)
+                        if os.path.isfile(maybe_playlist_path):
+                            playlist_path = maybe_playlist_path
+                            self._print('Playlist path resolved to {0}.'.format(playlist_path))
+                            break
+                    else:
+                        self._print('Playlist path {0} does not resolve to any file.'.format(playlist_path))
+                        return self._build_playlist_from_all_files()
+                        #raise RuntimeError('Playlist path {0} does not resolve to any file.'.format(playlist_path))
+
+                basepath, extension = os.path.splitext(playlist_path)
+                if extension == '.m3u' or extension == '.m3u8':
+                    return build_playlist_m3u(playlist_path)
+                else:
+                    self._print('Unrecognized playlist format {0}.'.format(extension))
+                    return self._build_playlist_from_all_files()
+                    #raise RuntimeError('Unrecognized playlist format {0}.'.format(extension))
+            else:
+                return self._build_playlist_from_all_files()
+        else:
+            return self._build_playlist_from_all_files()
+
+    def _build_playlist_from_all_files(self):
         """Search all the file reader paths for movie files with the provided
         extensions.
         """
@@ -148,7 +191,8 @@ class VideoLooper:
                         repeat = repeatsetting.group(1)
                     else:
                         repeat = 1
-                    movies.append(Movie('{0}/{1}'.format(path.rstrip('/'), x), repeat))
+                    basename, extension = os.path.splitext(x)
+                    movies.append(Movie('{0}/{1}'.format(path.rstrip('/'), x), basename, repeat))
 
             # Get the video volume from the file in the usb key
             sound_vol_file_path = '{0}/{1}'.format(path.rstrip('/'), self._sound_vol_file)
@@ -158,7 +202,7 @@ class VideoLooper:
                     if self._is_number(sound_vol_string):
                         self._sound_vol = int(float(sound_vol_string))
         # Create a playlist with the sorted list of movies.
-        return Playlist(sorted(movies), self._is_random)
+        return Playlist(sorted(movies))
 
     def _blank_screen(self):
         """Render a blank screen filled with the background color."""
@@ -278,7 +322,7 @@ class VideoLooper:
         # Get playlist of movies to play from file reader.
         playlist = self._build_playlist()
         self._prepare_to_run_playlist(playlist)
-        movie = playlist.get_next()
+        movie = playlist.get_next(self._is_random)
         # Main loop to play videos in the playlist and listen for file changes.
         while self._running:
             # Load and play a new movie if nothing is playing.
@@ -287,10 +331,10 @@ class VideoLooper:
 
                     if movie.playcount >= movie.repeats:
                         movie.clear_playcount()
-                        movie = playlist.get_next()
+                        movie = playlist.get_next(self._is_random)
                     elif self._player.can_loop_count() and movie.playcount > 0:
                         movie.clear_playcount()
-                        movie = playlist.get_next()
+                        movie = playlist.get_next(self._is_random)
 
                     movie.was_played()
 
@@ -310,7 +354,7 @@ class VideoLooper:
                     # Start playing the first available movie.
                     self._print('Playing movie: {0} {1}'.format(movie, infotext))
                     # todo: maybe clear screen to black so that background (image/color) is not visible for videos with a resolution that is < screen resolution
-                    self._player.play(movie.filename, loop=-1 if playlist.length()==1 else movie.repeats, vol = self._sound_vol)
+                    self._player.play(movie, loop=-1 if playlist.length()==1 else None, vol = self._sound_vol)
 
             # Check for changes in the file search path (like USB drives added)
             # and rebuild the playlist.
@@ -322,7 +366,7 @@ class VideoLooper:
                 # Rebuild playlist and show countdown again (if OSD enabled).
                 playlist = self._build_playlist()
                 self._prepare_to_run_playlist(playlist)
-                movie = playlist.get_next()
+                movie = playlist.get_next(self._is_random)
 
             # Give the CPU some time to do other tasks.
             time.sleep(0.002)
