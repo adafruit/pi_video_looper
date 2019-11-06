@@ -20,6 +20,8 @@ If you miss a feature just post an issue on github. (https://github.com/adafruit
    To be enabled by config key `omxplayer.show_titles`.
    Without a playlist file, titles are simply the videos' filename (without extension).  
    If a M3U playlist is used, then titles come from the playlist instead.
+   
+   An easy way to create M3U files is e.g. VLC. For an example m3u file see assets/example.m3u
 
 #### new in v1.0.4
  - new keyboard shortcut "k"  
