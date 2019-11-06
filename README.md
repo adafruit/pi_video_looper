@@ -14,10 +14,11 @@ If you miss a feature just post an issue on github. (https://github.com/adafruit
    To be enabled by specifying a playlist path in config key `playlist.path`. It can be absolute, or relative to the `file_reader`'s search directories (`directory`: path given, `usb_drive`: all USB drives' root).  
    Paths in the playlist can be absolute, or relative to the playlist's path.  
    Playlists can include a title for each item (`#EXTINF` directive); see next point.
+   If something goes wrong with the playlist (file not found etc.) it will fall back to just play all files in the `file_reader` directory. (enable `console_output` for more info)
  - Support for video titles (OMXPlayer only).  
    Can display a text on top of the videos.  
-   To be enabled by config key `omxplayer.show_titles`.  
-   By default, titles are simply the videos' filename (without extension).  
+   To be enabled by config key `omxplayer.show_titles`.
+   Without a playlist file, titles are simply the videos' filename (without extension).  
    If a M3U playlist is used, then titles come from the playlist instead.
 
 #### new in v1.0.4
