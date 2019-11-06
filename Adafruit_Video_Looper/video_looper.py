@@ -122,7 +122,7 @@ class VideoLooper:
                 image = pygame.transform.scale(image, self._size)
         return image
 
-    def _is_number(iself, s):
+    def _is_number(self, s):
         try:
             float(s) 
             return True
@@ -141,6 +141,10 @@ class VideoLooper:
                         raise RuntimeError('Playlist path {0} does not exist.'.format(playlist_path))
                 else:
                     paths = self._reader.search_paths()
+                    
+                    if not paths:
+                        return Playlist([])
+                    
                     for path in paths:
                         maybe_playlist_path = os.path.join(path, playlist_path)
                         if os.path.isfile(maybe_playlist_path):
@@ -150,22 +154,11 @@ class VideoLooper:
                     else:
                         raise RuntimeError('Playlist path {0} does not resolve to any file.'.format(playlist_path))
 
-                if self._config.has_option('playlist', 'format'):
-                    playlist_format = self._config.get('playlist', 'format').lower()
-                else:
-                    playlist_format = "auto"
-
-                if playlist_format == "auto":
-                    basepath, extension = os.path.splitext(playlist_path)
-                    if extension == '.m3u' or extension == '.m3u8':
-                        playlist_format = "m3u"
-                    else:
-                        raise RuntimeError('Unrecognized playlist extension {0}.'.format(extension))
-
-                if playlist_format == "m3u":
+                basepath, extension = os.path.splitext(playlist_path)
+                if extension == '.m3u' or extension == '.m3u8':
                     return build_playlist_m3u(playlist_path)
                 else:
-                    raise RuntimeError('Unrecognized playlist format {0}.'.format(playlist_format))
+                    raise RuntimeError('Unrecognized playlist format {0}.'.format(extension))
             else:
                 return self._build_playlist_from_all_files()
         else:
