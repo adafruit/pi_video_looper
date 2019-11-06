@@ -138,7 +138,9 @@ class VideoLooper:
             if playlist_path != "":
                 if os.path.isabs(playlist_path):
                     if not os.path.isfile(playlist_path):
-                        raise RuntimeError('Playlist path {0} does not exist.'.format(playlist_path))
+                        self._print('Playlist path {0} does not exist.'.format(playlist_path))
+                        return self._build_playlist_from_all_files()
+                        #raise RuntimeError('Playlist path {0} does not exist.'.format(playlist_path))
                 else:
                     paths = self._reader.search_paths()
                     
@@ -152,13 +154,17 @@ class VideoLooper:
                             self._print('Playlist path resolved to {0}.'.format(playlist_path))
                             break
                     else:
-                        raise RuntimeError('Playlist path {0} does not resolve to any file.'.format(playlist_path))
+                        self._print('Playlist path {0} does not resolve to any file.'.format(playlist_path))
+                        return self._build_playlist_from_all_files()
+                        #raise RuntimeError('Playlist path {0} does not resolve to any file.'.format(playlist_path))
 
                 basepath, extension = os.path.splitext(playlist_path)
                 if extension == '.m3u' or extension == '.m3u8':
                     return build_playlist_m3u(playlist_path)
                 else:
-                    raise RuntimeError('Unrecognized playlist format {0}.'.format(extension))
+                    self._print('Unrecognized playlist format {0}.'.format(extension))
+                    return self._build_playlist_from_all_files()
+                    #raise RuntimeError('Unrecognized playlist format {0}.'.format(extension))
             else:
                 return self._build_playlist_from_all_files()
         else:
