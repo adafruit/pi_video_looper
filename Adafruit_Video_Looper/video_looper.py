@@ -101,7 +101,7 @@ class VideoLooper:
         # start keyboard handler thread:
         # Event handling for key press, if keyboard control is enabled
         if self._keyboard_control:
-            self._keyboard_thread = threading.Thread(target=self._handle_keyboard_shortcuts)
+            self._keyboard_thread = threading.Thread(target=self._handle_keyboard_shortcuts, daemon=True)
             self._keyboard_thread.start()
 
     def _print(self, message):
@@ -401,7 +401,9 @@ class VideoLooper:
                 self._set_hardware_volume()
                 movie = playlist.get_next(self._is_random)
 
-            # Give the CPU some time to do other tasks. low values increase "responsiveness to changes" but increase CPU usage 0.002
+            # Give the CPU some time to do other tasks. low values increase "responsiveness to changes" but increase CPU usage old value was 0.002
+            # since keyboard commands are handled in a seperate thread and also with a event queue this does not have to be that low
+            # historically it was very low (=checking keypresses often) so not to "miss" any keyboard inputs
             time.sleep(0.5)
 
     def quit(self):
@@ -410,8 +412,6 @@ class VideoLooper:
         self._running = False
         if self._player is not None:
             self._player.stop()
-        if self._keyboard_control:
-            self._keyboard_thread.join(1)
         pygame.quit()
 
 
