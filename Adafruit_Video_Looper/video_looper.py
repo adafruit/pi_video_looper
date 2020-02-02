@@ -101,7 +101,7 @@ class VideoLooper:
         # start keyboard handler thread:
         # Event handling for key press, if keyboard control is enabled
         if self._keyboard_control:
-            self._keyboard_thread = threading.Thread(target=self._handle_keyboard_shortcuts)
+            self._keyboard_thread = threading.Thread(target=self._handle_keyboard_shortcuts, daemon=True)
             self._keyboard_thread.start()
 
     def _print(self, message):
@@ -329,23 +329,23 @@ class VideoLooper:
             
     def _handle_keyboard_shortcuts(self):
         while self._running:
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    # If pressed key is ESC quit program
-                    if event.key == pygame.K_ESCAPE:
-                        self._print("ESC was pressed. quitting...")
-                        self.quit()
-                    if event.key == pygame.K_k:
-                        self._print("k was pressed. skipping...")
+            event = pygame.event.wait()
+            if event.type == pygame.KEYDOWN:
+                # If pressed key is ESC quit program
+                if event.key == pygame.K_ESCAPE:
+                    self._print("ESC was pressed. quitting...")
+                    self.quit()
+                if event.key == pygame.K_k:
+                    self._print("k was pressed. skipping...")
+                    self._player.stop(3)
+                if event.key == pygame.K_s:
+                    if self._playbackStopped:
+                        self._print("s was pressed. starting...")
+                        self._playbackStopped = False
+                    else:
+                        self._print("s was pressed. stopping...")
+                        self._playbackStopped = True
                         self._player.stop(3)
-                    if event.key == pygame.K_s:
-                        if self._playbackStopped:
-                            self._print("s was pressed. starting...")
-                            self._playbackStopped = False
-                        else:
-                            self._print("s was pressed. stopping...")
-                            self._playbackStopped = True
-                            self._player.stop(3)
 
 
     def run(self):
@@ -401,7 +401,10 @@ class VideoLooper:
                 self._set_hardware_volume()
                 movie = playlist.get_next(self._is_random)
 
-            # Give the CPU some time to do other tasks.
+            # Give the CPU some time to do other tasks. low values increase "responsiveness to changes" and reduce the pause between files
+            # but increase CPU usage
+            # since keyboard commands are handled in a seperate thread this sleeptime mostly influences the pause between files
+                        
             time.sleep(0.002)
 
     def quit(self):
@@ -411,8 +414,7 @@ class VideoLooper:
         if self._player is not None:
             self._player.stop()
         pygame.quit()
-        if self._keyboard_control:
-            self._keyboard_thread.join(1)
+
 
 
     def signal_quit(self, signal, frame):

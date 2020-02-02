@@ -112,7 +112,7 @@ class USBDriveReaderCopy(object):
                     self.draw_info_text("Copying splashscreen file...")
                     time.sleep(2)
                     self.copy_with_progress(loader_file_path,'/home/pi/loader.png')
-
+                    
     def draw_copy_progress(self, copied, total):
         perc = 100 * copied / total
         assert (isinstance(perc, float))

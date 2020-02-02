@@ -8,6 +8,10 @@ If you miss a feature just post an issue on github. (https://github.com/adafruit
 
 ## Changelog
 
+#### new in v1.0.7
+ - huge improvements to CPU utilisation with keyboard_control enabled
+ - better randomness for random playback
+
 #### new in v1.0.6
 
  - Support for OMXPlayer ALSA sound output.  
@@ -15,6 +19,7 @@ If you miss a feature just post an issue on github. (https://github.com/adafruit
  - Support for ALSA hardware volume control.  
    The new config keys `alsa.hw_vol_file` and `alsa.hw_vol_control` can be used to set the output device volume based on a text file provided with the videos.
  - The `sound_vol_file` functionality can now be disabled by leaving the config value empty.
+
 
 #### new in v1.0.5
 
