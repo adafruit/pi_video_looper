@@ -4,6 +4,7 @@
 import random
 from typing import Optional
 
+random.seed()
 
 class Movie:
     """Representation of a movie"""
