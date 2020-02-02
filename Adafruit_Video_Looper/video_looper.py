@@ -6,12 +6,14 @@ import configparser
 import importlib
 import os
 import re
+import subprocess
 import sys
 import signal
 import time
 import pygame
 import threading
 
+from .alsa_config import parse_hw_device
 from .model import Playlist, Movie
 from .playlist_builders import build_playlist_m3u
 
@@ -77,6 +79,12 @@ class VideoLooper:
         # Load configured video player and file reader modules.
         self._player = self._load_player()
         self._reader = self._load_file_reader()
+        # Load ALSA hardware configuration.
+        self._alsa_hw_device = parse_hw_device(self._config.get('alsa', 'hw_device'))
+        self._alsa_hw_vol_control = self._config.get('alsa', 'hw_vol_control')
+        self._alsa_hw_vol_file = self._config.get('alsa', 'hw_vol_file')
+        # default ALSA hardware volume (volume will not be changed)
+        self._alsa_hw_vol = None
         # Load sound volume file name value
         self._sound_vol_file = self._config.get('omxplayer', 'sound_vol_file')
         # default value to 0 millibels (omxplayer)
@@ -194,13 +202,22 @@ class VideoLooper:
                     basename, extension = os.path.splitext(x)
                     movies.append(Movie('{0}/{1}'.format(path.rstrip('/'), x), basename, repeat))
 
+            # Get the ALSA hardware volume from the file in the usb key
+            if self._alsa_hw_vol_file:
+                alsa_hw_vol_file_path = '{0}/{1}'.format(path.rstrip('/'), self._alsa_hw_vol_file)
+                if os.path.exists(alsa_hw_vol_file_path):
+                    with open(alsa_hw_vol_file_path, 'r') as alsa_hw_vol_file:
+                        alsa_hw_vol_string = alsa_hw_vol_file.readline()
+                        self._alsa_hw_vol = alsa_hw_vol_string
+                    
             # Get the video volume from the file in the usb key
-            sound_vol_file_path = '{0}/{1}'.format(path.rstrip('/'), self._sound_vol_file)
-            if os.path.exists(sound_vol_file_path):
-                with open(sound_vol_file_path, 'r') as sound_file:
-                    sound_vol_string = sound_file.readline()
-                    if self._is_number(sound_vol_string):
-                        self._sound_vol = int(float(sound_vol_string))
+            if self._sound_vol_file:
+                sound_vol_file_path = '{0}/{1}'.format(path.rstrip('/'), self._sound_vol_file)
+                if os.path.exists(sound_vol_file_path):
+                    with open(sound_vol_file_path, 'r') as sound_file:
+                        sound_vol_string = sound_file.readline()
+                        if self._is_number(sound_vol_string):
+                            self._sound_vol = int(float(sound_vol_string))
         # Create a playlist with the sorted list of movies.
         return Playlist(sorted(movies))
 
@@ -296,6 +313,20 @@ class VideoLooper:
         else:
             self._idle_message()
 
+    def _set_hardware_volume(self):
+        if self._alsa_hw_vol != None:
+            msg = 'setting hardware volume (device: {}, control: {}, value: {})'
+            self._print(msg.format(
+                self._alsa_hw_device,
+                self._alsa_hw_vol_control,
+                self._alsa_hw_vol
+            ))
+            cmd = ['amixer', '-M']
+            if self._alsa_hw_device != None:
+                cmd.extend(('-c', str(self._alsa_hw_device[0])))
+            cmd.extend(('set', self._alsa_hw_vol_control, '--', self._alsa_hw_vol))
+            subprocess.check_call(cmd)
+            
     def _handle_keyboard_shortcuts(self):
         while self._running:
             for event in pygame.event.get():
@@ -322,6 +353,7 @@ class VideoLooper:
         # Get playlist of movies to play from file reader.
         playlist = self._build_playlist()
         self._prepare_to_run_playlist(playlist)
+        self._set_hardware_volume()
         movie = playlist.get_next(self._is_random)
         # Main loop to play videos in the playlist and listen for file changes.
         while self._running:
@@ -366,6 +398,7 @@ class VideoLooper:
                 # Rebuild playlist and show countdown again (if OSD enabled).
                 playlist = self._build_playlist()
                 self._prepare_to_run_playlist(playlist)
+                self._set_hardware_volume()
                 movie = playlist.get_next(self._is_random)
 
             # Give the CPU some time to do other tasks.

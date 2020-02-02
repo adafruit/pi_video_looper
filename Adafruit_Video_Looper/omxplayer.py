@@ -7,6 +7,7 @@ import subprocess
 import tempfile
 import time
 
+from .alsa_config import parse_hw_device
 
 class OMXPlayer:
 
@@ -33,7 +34,10 @@ class OMXPlayer:
                                  .split(',')
         self._extra_args = config.get('omxplayer', 'extra_args').split()
         self._sound = config.get('omxplayer', 'sound').lower()
-        assert self._sound in ('hdmi', 'local', 'both'), 'Unknown omxplayer sound configuration value: {0} Expected hdmi, local, or both.'.format(self._sound)
+        assert self._sound in ('hdmi', 'local', 'both', 'alsa'), 'Unknown omxplayer sound configuration value: {0} Expected hdmi, local, both or alsa.'.format(self._sound)
+        self._alsa_hw_device = parse_hw_device(config.get('alsa', 'hw_device'))
+        if self._alsa_hw_device != None and self._sound == 'alsa':
+            self._sound = 'alsa:hw:{},{}'.format(self._alsa_hw_device[0], self._alsa_hw_device[1])
         self._show_titles = config.getboolean('omxplayer', 'show_titles')
         if self._show_titles:
             title_duration = config.getint('omxplayer', 'title_duration')
