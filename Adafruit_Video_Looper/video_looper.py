@@ -401,10 +401,11 @@ class VideoLooper:
                 self._set_hardware_volume()
                 movie = playlist.get_next(self._is_random)
 
-            # Give the CPU some time to do other tasks. low values increase "responsiveness to changes" but increase CPU usage old value was 0.002
-            # since keyboard commands are handled in a seperate thread and also with a event queue this does not have to be that low
-            # historically it was very low (=checking keypresses often) so not to "miss" any keyboard inputs
-            time.sleep(0.5)
+            # Give the CPU some time to do other tasks. low values increase "responsiveness to changes" and reduce the pause between files
+            # but increase CPU usage
+            # since keyboard commands are handled in a seperate thread this sleeptime mostly influences the pause between files
+                        
+            time.sleep(0.002)
 
     def quit(self):
         """Shut down the program"""

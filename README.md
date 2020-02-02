@@ -9,8 +9,7 @@ If you miss a feature just post an issue on github. (https://github.com/adafruit
 ## Changelog
 
 #### new in v1.0.7
- - copymode copies playlist file if defined
- - huge improvements to CPU utilisation, especially with keyboard_control enabled
+ - huge improvements to CPU utilisation with keyboard_control enabled
  - better randomness for random playback
 
 #### new in v1.0.6

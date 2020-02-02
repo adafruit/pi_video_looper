@@ -112,18 +112,7 @@ class USBDriveReaderCopy(object):
                     self.draw_info_text("Copying splashscreen file...")
                     time.sleep(2)
                     self.copy_with_progress(loader_file_path,'/home/pi/loader.png')
-
-            #copy playlist file if defined
-            if self._config.has_option('playlist', 'path'):
-                playlist_path = self._config.get('playlist', 'path')
-                if playlist_path != "":
-                    if not os.path.isabs(playlist_path) and os.path.isfile(playlist_path):
-                        self.clear_screen()
-                        self.draw_info_text("Copying playlist file...")
-                        time.sleep(2)
-                        self.copy_with_progress(playlist_path, '{0}/{1}'.format(self._target_path.rstrip('/'), os.path.basename(loader_file_path)))
-
-
+                    
     def draw_copy_progress(self, copied, total):
         perc = 100 * copied / total
         assert (isinstance(perc, float))
