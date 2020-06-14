@@ -74,6 +74,7 @@ class VideoLooper:
         pygame.mouse.set_visible(False)
         self._screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN | pygame.NOFRAME)
         self._size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
+        self._scaleFactor = 1920/self._size[0]
         self._bgimage = self._load_bgimage()
         self._blank_screen()
         # Load configured video player and file reader modules.
@@ -91,8 +92,8 @@ class VideoLooper:
         self._sound_vol = 0
         # Set other static internal state.
         self._extensions = '|'.join(self._player.supported_extensions())
-        self._small_font = pygame.font.Font(None, 50)
-        self._big_font   = pygame.font.Font(None, 250)
+        self._small_font = pygame.font.Font(None, round(50/self._scaleFactor))
+        self._big_font   = pygame.font.Font(None, round(250/self._scaleFactor))
         self._running    = True
         self._playbackStopped = False
         #used for not waiting the first time
@@ -193,7 +194,7 @@ class VideoLooper:
 
             for x in os.listdir(path):
                 # Ignore hidden files (useful when file loaded on usb key from an OSX computer
-                if x[0] is not '.' and re.search('\.{0}$'.format(self._extensions), x, flags=re.IGNORECASE):
+                if x[0] != '.' and re.search('\.{0}$'.format(self._extensions), x, flags=re.IGNORECASE):
                     repeatsetting = re.search('_repeat_([0-9]*)x', x, flags=re.IGNORECASE)
                     if (repeatsetting is not None):
                         repeat = repeatsetting.group(1)
@@ -261,8 +262,8 @@ class VideoLooper:
             # Clear screen and draw text with line1 above line2 and all
             # centered horizontally and vertically.
             self._screen.fill(self._bgcolor)
-            self._screen.blit(label1, (sw/2-l1w/2, sh/2-l2h/2-l1h))
-            self._screen.blit(label2, (sw/2-l2w/2, sh/2-l2h/2))
+            self._screen.blit(label1, (round(sw/2-l1w/2), round(sh/2-l2h/2-l1h)))
+            self._screen.blit(label2, (round(sw/2-l2w/2), round(sh/2-l2h/2)))
             pygame.display.update()
             # Pause for a second between each frame.
             time.sleep(1)
@@ -280,12 +281,12 @@ class VideoLooper:
         lw, lh = label.get_size()
         sw, sh = self._screen.get_size()
         self._screen.fill(self._bgcolor)
-        self._screen.blit(label, (sw/2-lw/2, sh/2-lh/2))
+        self._screen.blit(label, (round(sw/2-lw/2), round(sh/2-lh/2)))
         # If keyboard control is enabled, display message about it
         if self._keyboard_control:
             label2 = self._render_text('press ESC to quit')
             l2w, l2h = label2.get_size()
-            self._screen.blit(label2, (sw/2-l2w/2, sh/2-l2h/2+lh))
+            self._screen.blit(label2, (round(sw/2-l2w/2), round(sh/2-l2h/2+lh)))
         pygame.display.update()
 
     def display_message(self,message):
@@ -298,7 +299,7 @@ class VideoLooper:
         lw, lh = label.get_size()
         sw, sh = self._screen.get_size()
         self._screen.fill(self._bgcolor)
-        self._screen.blit(label, (sw/2-lw/2, sh/2-lh/2))
+        self._screen.blit(label, (round(sw/2-lw/2), round(sh/2-lh/2)))
         pygame.display.update()
 
     def _prepare_to_run_playlist(self, playlist):
