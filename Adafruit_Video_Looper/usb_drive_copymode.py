@@ -95,12 +95,12 @@ class USBDriveReaderCopy(object):
             if copy_mode == "replace":
                 # iterate over target path for deleting:
                 for x in os.listdir(self._target_path):
-                    if x[0] is not '.' and re.search('\.{0}$'.format(self._extensions), x, flags=re.IGNORECASE):
+                    if x[0] is not '.' and re.search('\.({0})$'.format(self._extensions), x, flags=re.IGNORECASE):
                         os.remove('{0}/{1}'.format(self._target_path.rstrip('/'), x))
 
             # iterate over source path for copying:
             for x in os.listdir(path):
-                if x[0] is not '.' and re.search('\.{0}$'.format(self._extensions), x, flags=re.IGNORECASE):
+                if x[0] is not '.' and re.search('\.({0})$'.format(self._extensions), x, flags=re.IGNORECASE):
                     #copy file
                     self.copy_with_progress('{0}/{1}'.format(path.rstrip('/'), x), '{0}/{1}'.format(self._target_path.rstrip('/'), x))
 
