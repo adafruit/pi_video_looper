@@ -193,7 +193,7 @@ class VideoLooper:
 
             for x in os.listdir(path):
                 # Ignore hidden files (useful when file loaded on usb key from an OSX computer
-                if x[0] is not '.' and re.search('\.{0}$'.format(self._extensions), x, flags=re.IGNORECASE):
+                if x[0] is not '.' and re.search('\.({0})$'.format(self._extensions), x, flags=re.IGNORECASE):
                     repeatsetting = re.search('_repeat_([0-9]*)x', x, flags=re.IGNORECASE)
                     if (repeatsetting is not None):
                         repeat = repeatsetting.group(1)
