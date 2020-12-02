@@ -15,9 +15,9 @@ If you miss a feature just post an issue on github. (https://github.com/adafruit
 #### new in v1.0.6
 
  - Support for OMXPlayer ALSA sound output.  
-   Enabled by setting `omxplayer.sound` to `alsa`. A new config key `alsa.hw_device` can be used to specify a non-default output device.
+   Enabled by setting sound output for omxplayer to `alsa` in video_looper.ini. A new config key `alsa.hw_device` can be used to specify a non-default output device.
  - Support for ALSA hardware volume control.  
-   The new config keys `alsa.hw_vol_file` and `alsa.hw_vol_control` can be used to set the output device volume based on a text file provided with the videos.
+   The new config keys `alsa.hw_vol_file` and `alsa.hw_vol_control` can be used to set the output device volume in a text file provided with the videos.
  - The `sound_vol_file` functionality can now be disabled by leaving the config value empty.
 
 
@@ -69,7 +69,7 @@ If you miss a feature just post an issue on github. (https://github.com/adafruit
   
 #### new in v1.0.1:
  - reworked for python3
- - keyboard control (quiting the player)
+ - keyboard control (quitting the player)
  - option for displaying an image instead of a blank screen between videos
     
 #### how to install:
