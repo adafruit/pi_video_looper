@@ -46,7 +46,7 @@ class Playlist:
         self._movies = movies
         self._index = None
 
-    def get_next(self, is_random) -> Movie:
+    def get_next(self, is_random, resume = False) -> Movie:
         """Get the next movie in the playlist. Will loop to start of playlist
         after reaching end.
         """
@@ -57,14 +57,26 @@ class Playlist:
         if is_random:
             self._index = random.randrange(0, self.length())
         else:
-            # Start at the first movie and increment through them in order.
+            # Start at the first movie or resume and increment through them in order.
             if self._index is None:
-                self._index = 0
+                if resume:
+                    try:
+                        with open('playlist_index.txt', 'r') as f:
+                            self._index = int(f.read())
+                    except FileNotFoundError:
+                        self._index = 0
+                else:
+                    self._index = 0
             else:
                 self._index += 1
+                
             # Wrap around to the start after finishing.
             if self._index >= self.length():
                 self._index = 0
+
+        if resume:
+            with open('playlist_index.txt','w') as f:
+                f.write(str(self._index))
 
         return self._movies[self._index]
 

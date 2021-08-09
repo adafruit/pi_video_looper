@@ -12,6 +12,7 @@ import signal
 import time
 import pygame
 import threading
+from datetime import datetime
 
 from .alsa_config import parse_hw_device
 from .model import Playlist, Movie
@@ -55,6 +56,7 @@ class VideoLooper:
         # Load other configuration values.
         self._osd = self._config.getboolean('video_looper', 'osd')
         self._is_random = self._config.getboolean('video_looper', 'is_random')
+        self._resume_playlist = self._config.getboolean('video_looper', 'resume_playlist') 
         self._keyboard_control = self._config.getboolean('video_looper', 'keyboard_control')
         # Get seconds for countdown from config
         self._countdown_time = self._config.getint('video_looper', 'countdown_time')
@@ -107,7 +109,8 @@ class VideoLooper:
     def _print(self, message):
         """Print message to standard output if console output is enabled."""
         if self._console_output:
-            print(message)
+            now = datetime.now()
+            print("[{}] {}".format(now, message))
 
     def _load_player(self):
         """Load the configured video player and return an instance of it."""
@@ -193,7 +196,7 @@ class VideoLooper:
 
             for x in os.listdir(path):
                 # Ignore hidden files (useful when file loaded on usb key from an OSX computer
-                if x[0] is not '.' and re.search('\.({0})$'.format(self._extensions), x, flags=re.IGNORECASE):
+                if x[0] != '.' and re.search('\.({0})$'.format(self._extensions), x, flags=re.IGNORECASE):
                     repeatsetting = re.search('_repeat_([0-9]*)x', x, flags=re.IGNORECASE)
                     if (repeatsetting is not None):
                         repeat = repeatsetting.group(1)
@@ -346,6 +349,10 @@ class VideoLooper:
                         self._print("s was pressed. stopping...")
                         self._playbackStopped = True
                         self._player.stop(3)
+                if event.key == pygame.K_p:
+                    self._print("p was pressed. shutting down...")
+                    self.quit(True)
+                    
 
 
     def run(self):
@@ -354,7 +361,7 @@ class VideoLooper:
         playlist = self._build_playlist()
         self._prepare_to_run_playlist(playlist)
         self._set_hardware_volume()
-        movie = playlist.get_next(self._is_random)
+        movie = playlist.get_next(self._is_random, self._resume_playlist)
         # Main loop to play videos in the playlist and listen for file changes.
         while self._running:
             # Load and play a new movie if nothing is playing.
@@ -363,10 +370,10 @@ class VideoLooper:
 
                     if movie.playcount >= movie.repeats:
                         movie.clear_playcount()
-                        movie = playlist.get_next(self._is_random)
+                        movie = playlist.get_next(self._is_random, self._resume_playlist)
                     elif self._player.can_loop_count() and movie.playcount > 0:
                         movie.clear_playcount()
-                        movie = playlist.get_next(self._is_random)
+                        movie = playlist.get_next(self._is_random, self._resume_playlist)
 
                     movie.was_played()
 
@@ -399,7 +406,7 @@ class VideoLooper:
                 playlist = self._build_playlist()
                 self._prepare_to_run_playlist(playlist)
                 self._set_hardware_volume()
-                movie = playlist.get_next(self._is_random)
+                movie = playlist.get_next(self._is_random, self._resume_playlist)
 
             # Give the CPU some time to do other tasks. low values increase "responsiveness to changes" and reduce the pause between files
             # but increase CPU usage
@@ -407,13 +414,16 @@ class VideoLooper:
                         
             time.sleep(0.002)
 
-    def quit(self):
+    def quit(self, shutdown=False):
         """Shut down the program"""
         self._print("quitting Video Looper")
-        self._running = False
+        self._playbackStopped = True
         if self._player is not None:
             self._player.stop()
         pygame.quit()
+        if shutdown:
+            os.system("sudo shutdown now")
+        self._running = False
 
 
 
