@@ -416,7 +416,7 @@ class VideoLooper:
 
     def quit(self, shutdown=False):
         """Shut down the program"""
-        self._print("quitting Video Looper")´
+        self._print("quitting Video Looper")
         self._playbackStopped = True
         if self._player is not None:
             self._player.stop()
