@@ -12,6 +12,7 @@ import signal
 import time
 import pygame
 import threading
+from datetime import datetime
 
 from .alsa_config import parse_hw_device
 from .model import Playlist, Movie
@@ -107,7 +108,8 @@ class VideoLooper:
     def _print(self, message):
         """Print message to standard output if console output is enabled."""
         if self._console_output:
-            print(message)
+            now = datetime.now()
+            print("[{}] {}".format(now,message))
 
     def _load_player(self):
         """Load the configured video player and return an instance of it."""
