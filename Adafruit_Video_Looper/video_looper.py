@@ -349,6 +349,10 @@ class VideoLooper:
                         self._print("s was pressed. stopping...")
                         self._playbackStopped = True
                         self._player.stop(3)
+                if event.key == pygame.K_p:
+                    self._print("p was pressed. shutting down...")
+                    self.quit(True)
+                    
 
 
     def run(self):
@@ -410,13 +414,16 @@ class VideoLooper:
                         
             time.sleep(0.002)
 
-    def quit(self):
+    def quit(self, shutdown=False):
         """Shut down the program"""
-        self._print("quitting Video Looper")
-        self._running = False
+        self._print("quitting Video Looper")´
+        self._playbackStopped = True
         if self._player is not None:
             self._player.stop()
         pygame.quit()
+        if shutdown:
+            os.system("sudo shutdown now")
+        self._running = False
 
 
 
