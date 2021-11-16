@@ -6,6 +6,9 @@ Easy to use out of the box but also has a lot of settings to make it fit your us
 
 If you miss a feature just post an issue on github. (https://github.com/adafruit/pi_video_looper)
 
+Only Raspberry Pi OS up until version 2021-05-07 is supported.
+Download the last supported version here (https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2021-05-28/2021-05-07-raspios-buster-armhf-lite.zip)
+
 ## Changelog
 
 #### new in v1.0.8
@@ -97,6 +100,7 @@ Note: files with the same name always get overwritten
     * with omxplayer there will also be a short gap between the repeats
     
 * if you have only one video then omxplayer can also loop seamlessly (and wth audio)
+* the last supported Rasperry Pi OS image version is 2021-05-07 (https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2021-05-28/2021-05-07-raspios-buster-armhf-lite.zip)
 
 #### keyboard commands:
 if enabled (via config file) the following keyboard commands are active:
