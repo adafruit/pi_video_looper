@@ -58,6 +58,7 @@ class VideoLooper:
         self._is_random = self._config.getboolean('video_looper', 'is_random')
         self._resume_playlist = self._config.getboolean('video_looper', 'resume_playlist') 
         self._keyboard_control = self._config.getboolean('video_looper', 'keyboard_control')
+        self._copyloader = config.getboolean('copymode', 'copyloader')
         # Get seconds for countdown from config
         self._countdown_time = self._config.getint('video_looper', 'countdown_time')
         # Get seconds for waittime bewteen files from config
@@ -404,6 +405,9 @@ class VideoLooper:
                 self._print("player stopped")
                 # Rebuild playlist and show countdown again (if OSD enabled).
                 playlist = self._build_playlist()
+                #refresh background image
+                if self._copyloader:
+                    self._load_bgimage()
                 self._prepare_to_run_playlist(playlist)
                 self._set_hardware_volume()
                 movie = playlist.get_next(self._is_random, self._resume_playlist)
