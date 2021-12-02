@@ -58,7 +58,7 @@ class VideoLooper:
         self._is_random = self._config.getboolean('video_looper', 'is_random')
         self._resume_playlist = self._config.getboolean('video_looper', 'resume_playlist') 
         self._keyboard_control = self._config.getboolean('video_looper', 'keyboard_control')
-        self._copyloader = config.getboolean('copymode', 'copyloader')
+        self._copyloader = self._config.getboolean('copymode', 'copyloader')
         # Get seconds for countdown from config
         self._countdown_time = self._config.getint('video_looper', 'countdown_time')
         # Get seconds for waittime bewteen files from config
