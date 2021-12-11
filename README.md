@@ -6,8 +6,10 @@ Easy to use out of the box but also has a lot of settings to make it fit your us
 
 If you miss a feature just post an issue on github. (https://github.com/adafruit/pi_video_looper)
 
-Only Raspberry Pi OS up until version 2021-05-07 is supported.
-Download the last supported version here (https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2021-05-28/2021-05-07-raspios-buster-armhf-lite.zip)
+Currently only Raspberry Pi OS Lite __(Legacy)__ is supported.
+You can download it from here: https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-legacy
+
+There are also pre-compiled versions available from: https://videolooper.de/ (but they might not contain the latest version of pi_video_looper)
 
 ## Changelog
 
