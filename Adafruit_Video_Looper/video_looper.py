@@ -407,7 +407,7 @@ class VideoLooper:
                 playlist = self._build_playlist()
                 #refresh background image
                 if self._copyloader:
-                    self._load_bgimage()
+                    self._bgimage = self._load_bgimage()
                 self._prepare_to_run_playlist(playlist)
                 self._set_hardware_volume()
                 movie = playlist.get_next(self._is_random, self._resume_playlist)
