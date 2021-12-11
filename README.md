@@ -13,6 +13,9 @@ There are also pre-compiled versions available from: https://videolooper.de/ (bu
 
 ## Changelog
 
+#### new in v1.0.9
+ - fixed: background image is reloaded in copymode without restart
+
 #### new in v1.0.8
  - playlist resume option
    when enabled will resume last played file on restart
