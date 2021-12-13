@@ -12,7 +12,7 @@ from .alsa_config import parse_hw_device
 class CVLCPlayer:
 
     def __init__(self, config):
-        """Create an instance of a video player that runs omxplayer in the
+        """Create an instance of a video player that runs cvlc in the
         background.
         """
         self._process = None
@@ -29,18 +29,18 @@ class CVLCPlayer:
         return self._temp_directory
 
     def _load_config(self, config):
-        self._extensions = config.get('omxplayer', 'extensions') \
+        self._extensions = config.get('cvlc', 'extensions') \
                                  .translate(str.maketrans('', '', ' \t\r\n.')) \
                                  .split(',')
-        self._extra_args = config.get('omxplayer', 'extra_args').split()
-        self._sound = config.get('omxplayer', 'sound').lower()
-        assert self._sound in ('hdmi', 'local', 'both', 'alsa'), 'Unknown omxplayer sound configuration value: {0} Expected hdmi, local, both or alsa.'.format(self._sound)
+        self._extra_args = config.get('cvlc', 'extra_args').split()
+        self._sound = config.get('cvlc', 'sound').lower()
+        assert self._sound in ('hdmi', 'local', 'both', 'alsa'), 'Unknown cvlc sound configuration value: {0} Expected hdmi, local, both or alsa.'.format(self._sound)
         self._alsa_hw_device = parse_hw_device(config.get('alsa', 'hw_device'))
         if self._alsa_hw_device != None and self._sound == 'alsa':
             self._sound = 'alsa:hw:{},{}'.format(self._alsa_hw_device[0], self._alsa_hw_device[1])
-        self._show_titles = config.getboolean('omxplayer', 'show_titles')
+        self._show_titles = config.getboolean('cvlc', 'show_titles')
         if self._show_titles:
-            title_duration = config.getint('omxplayer', 'title_duration')
+            title_duration = config.getint('cvlc', 'title_duration')
             if title_duration >= 0:
                 m, s = divmod(title_duration, 60)
                 h, m = divmod(m, 60)
@@ -56,23 +56,27 @@ class CVLCPlayer:
         """Play the provided movie file, optionally looping it repeatedly."""
         self.stop(3)  # Up to 3 second delay to let the old player stop.
         # Assemble list of arguments.
-        args = ['omxplayer']
-        args.extend(['-o', self._sound])  # Add sound arguments.
+        args = ['cvlc']
+        #args.extend(['-o', self._sound])  # Add sound arguments.
         args.extend(self._extra_args)     # Add extra arguments from config.
-        if vol is not 0:
-            args.extend(['--vol', str(vol)])
+        #if vol is not 0:
+        #    args.extend(['--vol', str(vol)])
         if loop is None:
             loop = movie.repeats
         if loop <= -1:
             args.append('--loop')  # Add loop parameter if necessary.
+        else:
+            args.append('--play-and-exit')
         if self._show_titles and movie.title:
             srt_path = os.path.join(self._get_temp_directory(), 'video_looper.srt')
             with open(srt_path, 'w') as f:
                 f.write(self._subtitle_header)
                 f.write(movie.title)
             args.extend(['--subtitles', srt_path])
+        else:
+            args.append('--no-osd')
         args.append(movie.filename)       # Add movie file path.
-        # Run omxplayer process and direct standard output to /dev/null.
+        # Run cvlc process and direct standard output to /dev/null.
         self._process = subprocess.Popen(args,
                                          stdout=open(os.devnull, 'wb'),
                                          close_fds=True)
@@ -90,9 +94,9 @@ class CVLCPlayer:
         """
         # Stop the player if it's running.
         if self._process is not None and self._process.returncode is None:
-            # There are a couple processes used by omxplayer, so kill both
+            # There are a couple processes used by cvlc, so kill both
             # with a pkill command.
-            subprocess.call(['pkill', '-9', 'omxplayer'])
+            subprocess.call(['pkill', '-9', 'cvlc'])
         # If a blocking timeout was specified, wait up to that amount of time
         # for the process to stop.
         start = time.time()
