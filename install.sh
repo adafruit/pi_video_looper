@@ -34,7 +34,7 @@ fi
 set -e
 
 echo "Updating system..."
-echo "==================
+echo "=================="
 apt update && apt upgrade -y
 
 echo "Installing dependencies..."
