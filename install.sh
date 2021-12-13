@@ -1,35 +1,38 @@
 #!/bin/sh
 
-# Error out if anything fails.
-set -e
-
 # Make sure script is run as root.
 if [ "$(id -u)" != "0" ]; then
   echo "Must be run as root with sudo! Try: sudo ./install.sh"
   exit 1
 fi
 
+echo "Configuring kernel modules..."
+echo "============================="
+
+# VLC requires "fake" KMS overlay to work in Bullseye.
+# Check /boot/config.txt for vc4-fkms-v3d overlay present and active.
+# If so, nothing to do here, module's already configured.
+grep '^dtoverlay=vc4-fkms-v3d' /boot/config.txt >/dev/null
+if [ $? -ne 0 ]; then
+  # fkms overlay not present, or is commented out. Check if vc4-kms-v3d
+  # (no 'f') is present and active. That's normally the default.
+  grep '^dtoverlay=vc4-kms-v3d' /boot/config.txt >/dev/null
+  if [ $? -eq 0 ]; then
+    # It IS present. Comment out that line, and insert the 'fkms' item
+    # on the next line.
+    sed -i "s/^dtoverlay=vc4-kms-v3d/#&\ndtoverlay=vc4-fkms-v3d/g" /boot/config.txt >/dev/null
+  else
+    # It's NOT present. Silently append 'fkms' overlay to end of file.
+    echo dtoverlay=vc4-fkms-v3d | sudo tee -a /boot/config.txt >/dev/null
+  fi
+fi
+
+# Error out if anything fails. Must be set AFTER grep calls above.
+set -e
 
 echo "Installing dependencies..."
 echo "=========================="
-apt update && apt -y install python3 python3-pip python3-pygame supervisor omxplayer ntfs-3g exfat-fuse
-
-if [ "$*" != "no_hello_video" ]
-then
-	echo "Installing hello_video..."
-	echo "========================="
-	apt -y install git build-essential python3-dev
-	git clone https://github.com/adafruit/pi_hello_video
-	cd pi_hello_video
-	./rebuild.sh
-	cd hello_video
-	make install
-	cd ../..
-	rm -rf pi_hello_video
-else
-    echo "hello_video was not installed"
-    echo "=========================="
-fi
+apt update && apt upgrade && apt -y install python3 python3-pip python3-pygame supervisor ntfs-3g exfat-fuse vlc
 
 echo "Installing video_looper program..."
 echo "=================================="

@@ -6,12 +6,12 @@ Easy to use out of the box but also has a lot of settings to make it fit your us
 
 If you miss a feature just post an issue on github. (https://github.com/adafruit/pi_video_looper)
 
-Currently only Raspberry Pi OS Lite __(Legacy)__ is supported.
-You can download it from here: https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-legacy
-
 There are also pre-compiled versions available from: https://videolooper.de/ (but they might not contain the latest version of pi_video_looper)
 
 ## Changelog
+
+#### new in v1.1.0
+ - Only cvlc is used for video playback. omxplayer and hello_video no longer work as of RasPiOS Bullseye. cvlc currently requires using the "fake" KMS device tree overlay; the install script sets this up.
 
 #### new in v1.0.9
  - fixed: background image is reloaded in copymode without restart
