@@ -30,9 +30,13 @@ fi
 # Error out if anything fails. Must be set AFTER grep calls above.
 set -e
 
+echo "Updating system..."
+echo "==================
+apt update && apt upgrade -y
+
 echo "Installing dependencies..."
 echo "=========================="
-apt update && apt upgrade && apt -y install python3 python3-pip python3-pygame supervisor ntfs-3g exfat-fuse vlc
+apt -y install python3 python3-pip python3-pygame supervisor ntfs-3g exfat-fuse vlc
 
 echo "Installing video_looper program..."
 echo "=================================="
