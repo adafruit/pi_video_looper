@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Make sure script is run as root.
 if [ "$(id -u)" != "0" ]; then
@@ -75,6 +75,6 @@ if [ $PROMPT_FOR_REBOOT -eq 1 ]; then
     reboot
   fi
 else
-  # No reboot needed; can start looper with current DTO config
+  # No reboot needed; can (re)start looper with current DTO config
   service supervisor restart
 fi
