@@ -74,6 +74,6 @@ class HelloVideoPlayer:
         return True
 
 
-def create_player(config, screen):
+def create_player(config, **kwargs):
     """Create new video player based on hello_video."""
     return HelloVideoPlayer(config)

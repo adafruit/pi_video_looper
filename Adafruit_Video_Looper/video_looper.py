@@ -77,7 +77,7 @@ class VideoLooper:
         pygame.mouse.set_visible(False)
         self._screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN | pygame.NOFRAME)
         self._size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
-        self._bgimage = self._load_bgimage()
+        self._bgimage = self._load_bgimage() #a tupple with pyimage, xpos, ypos
         self._blank_screen()
         # Load configured video player and file reader modules.
         self._player = self._load_player()
@@ -116,7 +116,7 @@ class VideoLooper:
     def _load_player(self):
         """Load the configured video player and return an instance of it."""
         module = self._config.get('video_looper', 'video_player')
-        return importlib.import_module('.' + module, 'Adafruit_Video_Looper').create_player(self._config, self._screen)
+        return importlib.import_module('.' + module, 'Adafruit_Video_Looper').create_player(self._config, screen=self._screen, bgimage=self._bgimage)
 
     def _load_file_reader(self):
         """Load the configured file reader and return an instance of it."""
@@ -126,13 +126,37 @@ class VideoLooper:
     def _load_bgimage(self):
         """Load the configured background image and return an instance of it."""
         image = None
+        image_x = 0
+        image_y = 0
+
         if self._config.has_option('video_looper', 'bgimage'):
             imagepath = self._config.get('video_looper', 'bgimage')
             if imagepath != "" and os.path.isfile(imagepath):
                 self._print('Using ' + str(imagepath) + ' as a background')
                 image = pygame.image.load(imagepath)
-                image = pygame.transform.scale(image, self._size)
-        return image
+
+                screen_w, screen_h = self._size
+                image_w, image_h = image.get_size()
+
+                screen_aspect_ratio = screen_w / screen_h
+                photo_aspect_ratio = image_w / image_h
+
+                if screen_aspect_ratio < photo_aspect_ratio:  # Width is binding
+                    new_image_w = screen_w
+                    new_image_h = int(new_image_w / photo_aspect_ratio)
+                    image = pygame.transform.scale(image, (new_image_w, new_image_h))
+                    image_y = (screen_h - new_image_h) // 2
+
+                elif screen_aspect_ratio > photo_aspect_ratio:  # Height is binding
+                    new_image_h = screen_h
+                    new_image_w = int(new_image_h * photo_aspect_ratio)
+                    image = pygame.transform.scale(image, (new_image_w, new_image_h))
+                    image_x = (screen_w - new_image_w) // 2
+
+                else:  # Images have the same aspect ratio
+                    image = pygame.transform.scale(image, (screen_w, screen_h))
+
+        return (image, image_x, image_y)
 
     def _is_number(self, s):
         try:
@@ -226,12 +250,11 @@ class VideoLooper:
         return Playlist(sorted(movies))
 
     def _blank_screen(self):
-        """Render a blank screen filled with the background color."""
+        """Render a blank screen filled with the background color and optional the background image."""
         self._screen.fill(self._bgcolor)
-        if self._bgimage is not None:
-            rect = self._bgimage.get_rect()
-            self._screen.blit(self._bgimage, rect)
-        pygame.display.update()
+        if self._bgimage[0] is not None:
+            self._screen.blit(self._bgimage[0], (self._bgimage[1], self._bgimage[2]))
+        pygame.display.flip()
 
     def _render_text(self, message, font=None):
         """Draw the provided message and return as pygame surface of it rendered

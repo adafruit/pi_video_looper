@@ -58,7 +58,6 @@ class USBDriveReaderCopy(object):
         self._copyloader = config.getboolean('copymode', 'copyloader')
         self._password = config.get('copymode', 'password')
 
-        #needs to be changed to a more generic approach to support other players
         self._extensions = '|'.join(config.get(self._config.get('video_looper', 'video_player'), 'extensions') \
                                  .translate(str.maketrans('','', ' \t\r\n.')) \
                                  .split(','))
