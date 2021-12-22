@@ -59,7 +59,7 @@ class OMXPlayer:
         args = ['omxplayer']
         args.extend(['-o', self._sound])  # Add sound arguments.
         args.extend(self._extra_args)     # Add extra arguments from config.
-        if vol is not 0:
+        if vol != 0:
             args.extend(['--vol', str(vol)])
         if loop is None:
             loop = movie.repeats
@@ -108,6 +108,6 @@ class OMXPlayer:
         return False
 
 
-def create_player(config):
+def create_player(config, **kwargs):
     """Create new video player based on omxplayer."""
     return OMXPlayer(config)

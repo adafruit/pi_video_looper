@@ -9,6 +9,12 @@ If you miss a feature just post an issue on github. (https://github.com/adafruit
 There are also pre-compiled versions available from: https://videolooper.de/ (but they might not contain the latest version of pi_video_looper)
 
 ## Changelog
+#### new in v1.0.10
+ - NEW PLAYER: "Image Player" (beta)  
+   The new player can display images instead of videos (slideshow).  
+   Display duration and other options can be controlled via "image_player" section in ini  
+   All other settings, like background image, color, wait time, copy mode, keyboard shortcuts, etc. should work as expected  
+   Currently tested formats: jpg, gif, png (others might work also - you need to adapt the extensions setting)
 
 #### new in v1.1.0
  - Only cvlc is used for video playback. omxplayer and hello_video no longer work as of RasPiOS Bullseye. cvlc currently requires using the "fake" KMS device tree overlay; the install script sets this up.
@@ -17,7 +23,7 @@ There are also pre-compiled versions available from: https://videolooper.de/ (bu
  - fixed: background image is reloaded in copymode without restart
 
 #### new in v1.0.8
- - playlist resume option
+ - playlist resume option  
    when enabled will resume last played file on restart
  - console output now has a timestamp for easier event tracking
  - Keyboard key for shutdown added ("p")
