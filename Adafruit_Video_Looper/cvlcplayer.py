@@ -112,6 +112,6 @@ class CVLCPlayer:
         return False
 
 
-def create_player(config):
+def create_player(config, **kwargs):
     """Create new video player based on cvlc."""
     return CVLCPlayer(config)
