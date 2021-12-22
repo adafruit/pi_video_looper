@@ -6,6 +6,6 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
-# Disable any supervisor process that start video looper.
-mv /etc/supervisor/conf.d/video_looper.conf.disabled /etc/supervisor/conf.d/video_looper.conf
-supervisorctl reload
+# enable and start video_looper service
+systemctl enable video_looper
+systemctl start video_looper 

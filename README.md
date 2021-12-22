@@ -123,7 +123,6 @@ if enabled (via config file) the following keyboard commands are active:
 #### troubleshooting:
 * nothing happening (screen flashes once) when in copymode and new drive is plugged in?
     * check if you have the "password file" on your drive (see copymode explained above)
-* if enabled (via config file) log output can be found in `/var/log/supervisor/`
-  You can use e.g. `tail -f /var/log/supervisor/*` to view the logs
+* if enabled (via config file) log output can be displayed with `journalctl -fu video_looper`
 
 for a detailed tutorial visit: https://learn.adafruit.com/raspberry-pi-video-looper/installation
