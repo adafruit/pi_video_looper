@@ -32,12 +32,15 @@ class CVLCPlayer:
         self._extensions = config.get('cvlc', 'extensions') \
                                  .translate(str.maketrans('', '', ' \t\r\n.')) \
                                  .split(',')
-        #self._extra_args = config.get('cvlc', 'extra_args').split()
-        #self._sound = config.get('cvlc', 'sound').lower()
-        #assert self._sound in ('hdmi', 'local', 'both', 'alsa'), 'Unknown cvlc sound configuration value: {0} Expected hdmi, local, both or alsa.'.format(self._sound)
-        #self._alsa_hw_device = parse_hw_device(config.get('alsa', 'hw_device'))
-        #if self._alsa_hw_device != None and self._sound == 'alsa':
-        #    self._sound = 'alsa:hw:{},{}'.format(self._alsa_hw_device[0], self._alsa_hw_device[1])
+        self._extra_args = config.get('cvlc', 'extra_args').split()
+        self._sound = config.get('cvlc', 'sound').lower()
+        assert self._sound in ('both', 'alsa'), 'Unknown cvlc sound configuration value: {0} Expected both or alsa.'.format(self._sound)
+        self._alsa_hw_device = parse_hw_device(config.get('alsa', 'hw_device'))
+        if self._alsa_hw_device != None and self._sound == 'alsa':
+            self._sound_args = ['--aout=alsa', '--alsa-audio-device="alsa:hw:{},{}"'.format(self._alsa_hw_device[0], self._alsa_hw_device[1])]
+        #
+        # maybe use: --video-title and --video-title-timeout or   --sub-file with the below code
+        #
         #self._show_titles = config.getboolean('cvlc', 'show_titles')
         #if self._show_titles:
         #    title_duration = config.getint('cvlc', 'title_duration')
@@ -57,10 +60,10 @@ class CVLCPlayer:
         self.stop(3)  # Up to 3 second delay to let the old player stop.
         # Assemble list of arguments.
         args = ['sudo', '-u','pi', 'cvlc']
-        #args.extend(['-o', self._sound])  # Add sound arguments.
-        #args.extend(self._extra_args)     # Add extra arguments from config.
-        #if vol is not 0:
-        #    args.extend(['--vol', str(vol)])
+        args.extend(self._sound_args)     # Add sound arguments.
+        args.extend(self._extra_args)     # Add extra arguments from config.
+        if vol is not 0:
+            args.extend(['--gain', str(vol)])
         if loop is None:
             loop = movie.repeats
         if loop <= -1:
