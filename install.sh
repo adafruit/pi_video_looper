@@ -12,7 +12,7 @@ cd "$(dirname "$0")"
 # Basic system prep
 echo "Installing dependencies..."
 echo "=========================="
-apt update && apt -y install python3 python3-pip python3-pygame supervisor ntfs-3g exfat-fuse
+apt update && apt -y install python3 python3-pip python3-pygame supervisor ntfs-3g exfat-fuse vlc
 
 mkdir -p /mnt/usbdrive0 # This is very important if you put your system in readonly after
 mkdir -p /home/pi/video # create default video directory
@@ -20,7 +20,7 @@ mkdir -p /home/pi/video # create default video directory
 # Determine OS and run legacy installer
 if [ "$(grep '^VERSION_ID=' /etc/os-release | grep -ioP '[[:digit:]]+')" -gt 10 ]; then
 
-  echo "Installing version for bulseye (or higher)..."
+  echo "Installing version for bullseye (or higher)..."
   echo "==================================="
   echo "omxplayer and hello_video are not available"
   echo "==================================="
@@ -48,10 +48,6 @@ if [ "$(grep '^VERSION_ID=' /etc/os-release | grep -ioP '[[:digit:]]+')" -gt 10 
     # Any change or addition of overlay will require a reboot when done.
     PROMPT_FOR_REBOOT=1
   fi
-
-  echo "Installing packages..."
-  echo "=========================="
-  apt -y install vlc
 
   echo "Copying config..."
   echo "=========================="
