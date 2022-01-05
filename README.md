@@ -93,6 +93,10 @@ There are also pre-compiled versions available from: https://videolooper.de/ (bu
 #### how to install:
 sudo ./install.sh
 
+#### features and settings
+To change the settings of the video looper (e.g. random playback) edit the `/boot/video_looper.ini` file (`sudo nano /boot/video_looper.ini`)
+Missing a feature or setting - open an issue (be sure to check all the settings in the video_looper.ini first)
+
 #### copymode explained:
 when a usb drive with video files is plugged in, they are copied onto the rpi. (with progress bar)
 
