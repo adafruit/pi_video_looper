@@ -17,6 +17,7 @@ class CVLCPlayer:
         """
         self._process = None
         self._temp_directory = None
+        self._sound_args = None
         self._load_config(config)
 
     def __del__(self):
@@ -60,7 +61,8 @@ class CVLCPlayer:
         self.stop(3)  # Up to 3 second delay to let the old player stop.
         # Assemble list of arguments.
         args = ['sudo', '-u','pi', 'cvlc']
-        args.extend(self._sound_args)     # Add sound arguments.
+        if self._sound_args:
+            args.extend(self._sound_args)     # Add sound arguments.
         args.extend(self._extra_args)     # Add extra arguments from config.
         if vol is not 0:
             args.extend(['--gain', str(vol)])
