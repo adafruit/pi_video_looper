@@ -38,7 +38,7 @@ class CVLCPlayer:
         assert self._sound in ('both', 'alsa'), 'Unknown cvlc sound configuration value: {0} Expected both or alsa.'.format(self._sound)
         self._alsa_hw_device = parse_hw_device(config.get('alsa', 'hw_device'))
         if self._alsa_hw_device != None and self._sound == 'alsa':
-            self._sound_args = ['--aout=alsa', '--alsa-audio-device="alsa:hw:{},{}"'.format(self._alsa_hw_device[0], self._alsa_hw_device[1])]
+            self._sound_args = ['--aout=alsa', '--alsa-audio-device=hw:{},{}'.format(self._alsa_hw_device[0], self._alsa_hw_device[1])]
         #
         # maybe use: --video-title and --video-title-timeout or   --sub-file with the below code
         #
@@ -81,6 +81,8 @@ class CVLCPlayer:
         #else:
         #    args.append('--no-osd')
         args.append(movie.filename)       # Add movie file path.
+        #DEBUG ONLY:
+        print(args)
         # Run cvlc process and direct standard output to /dev/null.
         self._process = subprocess.Popen(args,
                                          stdout=open(os.devnull, 'wb'),
