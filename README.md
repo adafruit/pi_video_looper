@@ -4,7 +4,7 @@ Can be used in art installations, fairs, theatre, events, infoscreens, advertism
 
 Easy to use out of the box but also has a lot of settings to make it fit your use case.
 
-If you miss a feature just post an issue on github. (https://github.com/adafruit/pi_video_looper)
+See the [video_looper.ini configuration file](https://github.com/christiansievers/pi_video_looper/blob/master/assets/video_looper.ini) for an overview of options. If you miss a feature just post an issue on Github. (https://github.com/adafruit/pi_video_looper)
 
 Currently only Raspberry Pi OS Lite __(Legacy)__ is supported.
 You can download it from here: https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-legacy
@@ -15,7 +15,7 @@ There are also pre-compiled versions available from: https://videolooper.de/ (bu
 #### new in v1.0.10
  - NEW PLAYER: "Image Player" (beta)  
    The new player can display images instead of videos (slideshow).  
-   Display duration and other options can be controlled via "image_player" section in ini  
+   Display duration and other options can be controlled via the "image_player" section in video_looper.ini  
    All other settings, like background image, color, wait time, copy mode, keyboard shortcuts, etc. should work as expected  
    Currently tested formats: jpg, gif, png (others might work also - you need to adapt the extensions setting)
 
@@ -113,7 +113,7 @@ Note: files with the same name always get overwritten
     * with hello_video there is no gap when a video is repeated but there is a small gap between different videos
     * with omxplayer there will also be a short gap between the repeats
     
-* if you have only one video then omxplayer can also loop seamlessly (and wth audio)
+* if you have only one video then omxplayer can also loop seamlessly (and with audio)
 * the last supported Rasperry Pi OS image version is 2021-05-07 (https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2021-05-28/2021-05-07-raspios-buster-armhf-lite.zip)
 
 #### keyboard commands:
