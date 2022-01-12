@@ -94,7 +94,7 @@ There are also pre-compiled versions available from: https://videolooper.de/ (bu
 sudo ./install.sh
 
 #### features and settings
-To change the settings of the video looper (e.g. random playback) edit the `/boot/video_looper.ini` file via ssh with `sudo nano /boot/video_looper.ini` or directly on the RPis SD Card via a cardreader.
+To change the settings of the video looper (e.g. random playback) edit the `/boot/video_looper.ini` file, i.e. by quitting the player with 'ESC' and logging in, or remotely via ssh. Then edit the configuration file with `sudo nano /boot/video_looper.ini`. Alternatively insert the SD card into your computer and edit it with your preferred text editor.
 
 #### copymode explained:
 when a usb drive with video files is plugged in, they are copied onto the rpi. (with progress bar)
