@@ -12,6 +12,7 @@ import signal
 import time
 import pygame
 import threading
+from datetime import datetime
 
 from .alsa_config import parse_hw_device
 from .model import Playlist, Movie
@@ -55,7 +56,9 @@ class VideoLooper:
         # Load other configuration values.
         self._osd = self._config.getboolean('video_looper', 'osd')
         self._is_random = self._config.getboolean('video_looper', 'is_random')
+        self._resume_playlist = self._config.getboolean('video_looper', 'resume_playlist') 
         self._keyboard_control = self._config.getboolean('video_looper', 'keyboard_control')
+        self._copyloader = self._config.getboolean('copymode', 'copyloader')
         # Get seconds for countdown from config
         self._countdown_time = self._config.getint('video_looper', 'countdown_time')
         # Get seconds for waittime bewteen files from config
@@ -74,7 +77,7 @@ class VideoLooper:
         pygame.mouse.set_visible(False)
         self._screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN | pygame.NOFRAME)
         self._size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
-        self._bgimage = self._load_bgimage()
+        self._bgimage = self._load_bgimage() #a tupple with pyimage, xpos, ypos
         self._blank_screen()
         # Load configured video player and file reader modules.
         self._player = self._load_player()
@@ -107,12 +110,13 @@ class VideoLooper:
     def _print(self, message):
         """Print message to standard output if console output is enabled."""
         if self._console_output:
-            print(message)
+            now = datetime.now()
+            print("[{}] {}".format(now, message))
 
     def _load_player(self):
         """Load the configured video player and return an instance of it."""
         module = self._config.get('video_looper', 'video_player')
-        return importlib.import_module('.' + module, 'Adafruit_Video_Looper').create_player(self._config)
+        return importlib.import_module('.' + module, 'Adafruit_Video_Looper').create_player(self._config, screen=self._screen, bgimage=self._bgimage)
 
     def _load_file_reader(self):
         """Load the configured file reader and return an instance of it."""
@@ -122,13 +126,37 @@ class VideoLooper:
     def _load_bgimage(self):
         """Load the configured background image and return an instance of it."""
         image = None
+        image_x = 0
+        image_y = 0
+
         if self._config.has_option('video_looper', 'bgimage'):
             imagepath = self._config.get('video_looper', 'bgimage')
             if imagepath != "" and os.path.isfile(imagepath):
                 self._print('Using ' + str(imagepath) + ' as a background')
                 image = pygame.image.load(imagepath)
-                image = pygame.transform.scale(image, self._size)
-        return image
+
+                screen_w, screen_h = self._size
+                image_w, image_h = image.get_size()
+
+                screen_aspect_ratio = screen_w / screen_h
+                photo_aspect_ratio = image_w / image_h
+
+                if screen_aspect_ratio < photo_aspect_ratio:  # Width is binding
+                    new_image_w = screen_w
+                    new_image_h = int(new_image_w / photo_aspect_ratio)
+                    image = pygame.transform.scale(image, (new_image_w, new_image_h))
+                    image_y = (screen_h - new_image_h) // 2
+
+                elif screen_aspect_ratio > photo_aspect_ratio:  # Height is binding
+                    new_image_h = screen_h
+                    new_image_w = int(new_image_h * photo_aspect_ratio)
+                    image = pygame.transform.scale(image, (new_image_w, new_image_h))
+                    image_x = (screen_w - new_image_w) // 2
+
+                else:  # Images have the same aspect ratio
+                    image = pygame.transform.scale(image, (screen_w, screen_h))
+
+        return (image, image_x, image_y)
 
     def _is_number(self, s):
         try:
@@ -193,7 +221,7 @@ class VideoLooper:
 
             for x in os.listdir(path):
                 # Ignore hidden files (useful when file loaded on usb key from an OSX computer
-                if x[0] is not '.' and re.search('\.{0}$'.format(self._extensions), x, flags=re.IGNORECASE):
+                if x[0] != '.' and re.search('\.({0})$'.format(self._extensions), x, flags=re.IGNORECASE):
                     repeatsetting = re.search('_repeat_([0-9]*)x', x, flags=re.IGNORECASE)
                     if (repeatsetting is not None):
                         repeat = repeatsetting.group(1)
@@ -222,12 +250,11 @@ class VideoLooper:
         return Playlist(sorted(movies))
 
     def _blank_screen(self):
-        """Render a blank screen filled with the background color."""
+        """Render a blank screen filled with the background color and optional the background image."""
         self._screen.fill(self._bgcolor)
-        if self._bgimage is not None:
-            rect = self._bgimage.get_rect()
-            self._screen.blit(self._bgimage, rect)
-        pygame.display.update()
+        if self._bgimage[0] is not None:
+            self._screen.blit(self._bgimage[0], (self._bgimage[1], self._bgimage[2]))
+        pygame.display.flip()
 
     def _render_text(self, message, font=None):
         """Draw the provided message and return as pygame surface of it rendered
@@ -346,6 +373,10 @@ class VideoLooper:
                         self._print("s was pressed. stopping...")
                         self._playbackStopped = True
                         self._player.stop(3)
+                if event.key == pygame.K_p:
+                    self._print("p was pressed. shutting down...")
+                    self.quit(True)
+                    
 
 
     def run(self):
@@ -354,7 +385,7 @@ class VideoLooper:
         playlist = self._build_playlist()
         self._prepare_to_run_playlist(playlist)
         self._set_hardware_volume()
-        movie = playlist.get_next(self._is_random)
+        movie = playlist.get_next(self._is_random, self._resume_playlist)
         # Main loop to play videos in the playlist and listen for file changes.
         while self._running:
             # Load and play a new movie if nothing is playing.
@@ -363,10 +394,10 @@ class VideoLooper:
 
                     if movie.playcount >= movie.repeats:
                         movie.clear_playcount()
-                        movie = playlist.get_next(self._is_random)
+                        movie = playlist.get_next(self._is_random, self._resume_playlist)
                     elif self._player.can_loop_count() and movie.playcount > 0:
                         movie.clear_playcount()
-                        movie = playlist.get_next(self._is_random)
+                        movie = playlist.get_next(self._is_random, self._resume_playlist)
 
                     movie.was_played()
 
@@ -397,9 +428,12 @@ class VideoLooper:
                 self._print("player stopped")
                 # Rebuild playlist and show countdown again (if OSD enabled).
                 playlist = self._build_playlist()
+                #refresh background image
+                if self._copyloader:
+                    self._bgimage = self._load_bgimage()
                 self._prepare_to_run_playlist(playlist)
                 self._set_hardware_volume()
-                movie = playlist.get_next(self._is_random)
+                movie = playlist.get_next(self._is_random, self._resume_playlist)
 
             # Give the CPU some time to do other tasks. low values increase "responsiveness to changes" and reduce the pause between files
             # but increase CPU usage
@@ -407,13 +441,16 @@ class VideoLooper:
                         
             time.sleep(0.002)
 
-    def quit(self):
+    def quit(self, shutdown=False):
         """Shut down the program"""
         self._print("quitting Video Looper")
-        self._running = False
+        self._playbackStopped = True
         if self._player is not None:
             self._player.stop()
         pygame.quit()
+        if shutdown:
+            os.system("sudo shutdown now")
+        self._running = False
 
 
 
