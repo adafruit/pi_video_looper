@@ -58,7 +58,6 @@ class USBDriveReaderCopy(object):
         self._copyloader = config.getboolean('copymode', 'copyloader')
         self._password = config.get('copymode', 'password')
 
-        #needs to be changed to a more generic approach to support other players
         self._extensions = '|'.join(config.get(self._config.get('video_looper', 'video_player'), 'extensions') \
                                  .translate(str.maketrans('','', ' \t\r\n.')) \
                                  .split(','))
@@ -95,12 +94,12 @@ class USBDriveReaderCopy(object):
             if copy_mode == "replace":
                 # iterate over target path for deleting:
                 for x in os.listdir(self._target_path):
-                    if x[0] is not '.' and re.search('\.{0}$'.format(self._extensions), x, flags=re.IGNORECASE):
+                    if x[0] is not '.' and re.search('\.({0})$'.format(self._extensions), x, flags=re.IGNORECASE):
                         os.remove('{0}/{1}'.format(self._target_path.rstrip('/'), x))
 
             # iterate over source path for copying:
             for x in os.listdir(path):
-                if x[0] is not '.' and re.search('\.{0}$'.format(self._extensions), x, flags=re.IGNORECASE):
+                if x[0] is not '.' and re.search('\.({0})$'.format(self._extensions), x, flags=re.IGNORECASE):
                     #copy file
                     self.copy_with_progress('{0}/{1}'.format(path.rstrip('/'), x), '{0}/{1}'.format(self._target_path.rstrip('/'), x))
 

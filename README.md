@@ -4,9 +4,29 @@ Can be used in art installations, fairs, theatre, events, infoscreens, advertism
 
 Easy to use out of the box but also has a lot of settings to make it fit your use case.
 
-If you miss a feature just post an issue on github. (https://github.com/adafruit/pi_video_looper)
+See the [video_looper.ini configuration file](https://github.com/christiansievers/pi_video_looper/blob/master/assets/video_looper.ini) for an overview of options. If you miss a feature just post an issue on Github. (https://github.com/adafruit/pi_video_looper)
+
+Currently only Raspberry Pi OS Lite __(Legacy)__ is supported.
+You can download it from here: https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-legacy
+
+There are also pre-compiled versions available from: https://videolooper.de/ (but they might not contain the latest version of pi_video_looper)
 
 ## Changelog
+#### new in v1.0.10
+ - NEW PLAYER: "Image Player" (beta)  
+   The new player can display images instead of videos (slideshow).  
+   Display duration and other options can be controlled via the "image_player" section in video_looper.ini  
+   All other settings, like background image, color, wait time, copy mode, keyboard shortcuts, etc. should work as expected  
+   Currently tested formats: jpg, gif, png (others might work also - you need to adapt the extensions setting)
+
+#### new in v1.0.9
+ - fixed: background image is reloaded in copymode without restart
+
+#### new in v1.0.8
+ - playlist resume option  
+   when enabled will resume last played file on restart
+ - console output now has a timestamp for easier event tracking
+ - Keyboard key for shutdown added ("p")
 
 #### new in v1.0.7
  - huge improvements to CPU utilisation with keyboard_control enabled
@@ -19,7 +39,6 @@ If you miss a feature just post an issue on github. (https://github.com/adafruit
  - Support for ALSA hardware volume control.  
    The new config keys `alsa.hw_vol_file` and `alsa.hw_vol_control` can be used to set the output device volume in a text file provided with the videos.
  - The `sound_vol_file` functionality can now be disabled by leaving the config value empty.
-
 
 #### new in v1.0.5
 
@@ -43,7 +62,6 @@ If you miss a feature just post an issue on github. (https://github.com/adafruit
    stops the current playback. pressing s again starts the playback
  - reworked shortcut handling 
  
-
 #### new in v1.0.3
  - **major new feature:** copymode  
  files will be copied from the usb stick to the player (with fancy progress bar)  
@@ -75,6 +93,8 @@ If you miss a feature just post an issue on github. (https://github.com/adafruit
 #### how to install:
 sudo ./install.sh
 
+#### features and settings
+To change the settings of the video looper (e.g. random playback) edit the `/boot/video_looper.ini` file, i.e. by quitting the player with 'ESC' and logging in, or remotely via ssh. Then edit the configuration file with `sudo nano /boot/video_looper.ini`. Alternatively insert the SD card into your computer and edit it with your preferred text editor.
 
 #### copymode explained:
 when a usb drive with video files is plugged in, they are copied onto the rpi. (with progress bar)
@@ -89,16 +109,24 @@ the default mode is "replace"
 Note: files with the same name always get overwritten
 
 #### notable things:
-* you can have one video repeated X times before playing the next by adding _repeat_Nx to the filename of a video ,
-where N is a positive number
+* you can have one video repeated X times before playing the next by adding _repeat_Nx to the filename of a video, where N is a positive number
     * with hello_video there is no gap when a video is repeated but there is a small gap between different videos
     * with omxplayer there will also be a short gap between the repeats
     
-* if you have only one video then omxplayer can also loop seamlessly (and wth audio)
+* if you have only one video then omxplayer can also loop seamlessly (and with audio)
+* the last supported Rasperry Pi OS image version is 2021-05-07 (https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2021-05-28/2021-05-07-raspios-buster-armhf-lite.zip)
 
+#### keyboard commands:
+if enabled (via config file) the following keyboard commands are active:
+* "ESC" - stops playback and exits video_looper
+* "k" - sKip - stops the playback of current file and plays next file
+* "s" - Stop/Start - stops or starts playback of current file
+* "p" - Power off - stop playback and shutdown RPi
 
-#### trouble shooting:
+#### troubleshooting:
 * nothing happening (screen flashes once) when in copymode and new drive is plugged in?
     * check if you have the "password file" on your drive (see copymode explained above)
+* if enabled (via config file) log output can be found in `/var/log/supervisor/`
+  You can use e.g. `tail -f /var/log/supervisor/*` to view the logs
 
 for a detailed tutorial visit: https://learn.adafruit.com/raspberry-pi-video-looper/installation
