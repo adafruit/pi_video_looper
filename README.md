@@ -1,16 +1,16 @@
 # pi_video_looper
 An application to turn your Raspberry Pi into a dedicated looping video playback device.
-Can be used in art installations, fairs, theatre, events, infoscreens, advertisment etc...
+Can be used in art installations, fairs, theatre, events, infoscreens, advertisements etc...
 
-Easy to use out of the box but also has a lot of settings to make it fit your use case.
+Works right out of the box, but also has a lot of customisation options to make it fit your use case. See the [video_looper.ini](https://github.com/adafruit/pi_video_looper/blob/master/assets/video_looper.ini) configuration file for an overview of options. 
 
-If you miss a feature just post an issue on github. (https://github.com/adafruit/pi_video_looper)
+If you miss a feature just post an issue on Github. (https://github.com/adafruit/pi_video_looper)
 
 With the current Raspberry Pi OS Version 11 (bullseye) only cvlc and image_player are supported.  
 If you still want or need to use omxplayer or hello_video you need to install Raspberry Pi OS Lite __(Legacy)__.  
-You can download it from here: https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-legac
+You can download it from here: https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-legacy
 
-There are also pre-compiled versions available from: https://videolooper.de/ (but they might not contain the latest version of pi_video_looper)
+There are also pre-compiled versions available from <https://videolooper.de> (but they might not always contain the latest version of pi_video_looper)
 
 ## Changelog
 #### new in v1.1.0
@@ -20,8 +20,8 @@ There are also pre-compiled versions available from: https://videolooper.de/ (bu
 
 #### new in v1.0.10
  - NEW PLAYER: "Image Player" (beta)  
-   The new player can display images instead of videos (slideshow).  
-   Display duration and other options can be controlled via "image_player" section in ini  
+   Displays images in a slideshow instead of playing videos.
+   Display duration and other options can be controlled via the "image_player" section in video_looper.ini  
    All other settings, like background image, color, wait time, copy mode, keyboard shortcuts, etc. should work as expected  
    Currently tested formats: jpg, gif, png (others might work also - you need to adapt the extensions setting)
 
@@ -40,10 +40,10 @@ There are also pre-compiled versions available from: https://videolooper.de/ (bu
 
 #### new in v1.0.6
 
- - Support for OMXPlayer ALSA sound output.  
-   Enabled by setting `omxplayer.sound` to `alsa`. A new config key `alsa.hw_device` can be used to specify a non-default output device.
+ - Support for omxplayer ALSA sound output.  
+   Enabled by setting sound output for omxplayer to `alsa` in video_looper.ini. A new config key `alsa.hw_device` can be used to specify a non-default output device.
  - Support for ALSA hardware volume control.  
-   The new config keys `alsa.hw_vol_file` and `alsa.hw_vol_control` can be used to set the output device volume based on a text file provided with the videos.
+   The new config keys `alsa.hw_vol_file` and `alsa.hw_vol_control` can be used to set the output device volume in a text file provided with the videos.
  - The `sound_vol_file` functionality can now be disabled by leaving the config value empty.
 
 #### new in v1.0.5
@@ -53,13 +53,13 @@ There are also pre-compiled versions available from: https://videolooper.de/ (bu
    Paths in the playlist can be absolute, or relative to the playlist's path.  
    Playlists can include a title for each item (`#EXTINF` directive); see next point.
    If something goes wrong with the playlist (file not found etc.) it will fall back to just play all files in the `file_reader` directory. (enable `console_output` for more info)
- - Support for video titles (OMXPlayer only).  
+ - Support for video titles (omxplayer only).  
    Can display a text on top of the videos.  
    To be enabled by config key `omxplayer.show_titles`.
    Without a playlist file, titles are simply the videos' filename (without extension).  
-   If a M3U playlist is used, then titles come from the playlist instead.
+   If an M3U playlist is used, then titles come from the playlist instead.
    
-   An easy way to create M3U files is e.g. VLC. For an example m3u file see assets/example.m3u
+   An easy way to create M3U files is e.g. VLC. For an example M3U file see assets/example.m3u
 
 #### new in v1.0.4
  - new keyboard shortcut "k"  
@@ -82,7 +82,7 @@ There are also pre-compiled versions available from: https://videolooper.de/ (bu
 
 #### new in v1.0.2:
  - in directory mode the directory is now monitored;
-   if the number of files changes the playlist is regenerated (usefull if the folder is filled e.g. via a network share)
+   if the number of files changes the playlist is regenerated (useful if the folder is filled e.g. via a network share)
  - some defaults have changed
  - new option for the countdown time (default is now 5 seconds)
  - new option for a wait time between videos (default is 0 seconds) 
@@ -93,14 +93,23 @@ There are also pre-compiled versions available from: https://videolooper.de/ (bu
   
 #### new in v1.0.1:
  - reworked for python3
- - keyboard control (quiting the player)
+ - keyboard control (quitting the player)
  - option for displaying an image instead of a blank screen between videos
     
-#### how to install:
-sudo ./install.sh
+## How to install
+`sudo apt-get install git`  
+`git clone https://github.com/adafruit/pi_video_looper`  
+`cd pi_video_looper`  
+`sudo ./install.sh`
+
+Default player is omxplayer. Use the `no_hello_video` flag to install without the hello_video player (a lot faster to install):  
+`sudo ./install.sh no_hello_video`
+
+## Features and settings
+To change the settings of the video looper (e.g. random playback, copy mode, advanced features) edit the `/boot/video_looper.ini` file, i.e. by quitting the player with 'ESC' and logging in to the Raspberry with an attached keyboard, or remotely via ssh. Then edit the configuration file with `sudo nano /boot/video_looper.ini`. Alternatively insert the SD card into your computer and edit it with your preferred text editor.
 
 #### copymode explained:
-when a usb drive with video files is plugged in, they are copied onto the rpi. (with progress bar)
+when a USB drive with video files is plugged in, they are copied onto the rpi. (with progress bar)
 
 to protect the player from unauthorised drives a file must be present on the drive that has a filename 
 as defined in the password setting in the ini file (default: videopi)
@@ -116,8 +125,8 @@ Note: files with the same name always get overwritten
     * with hello_video there is no gap when a video is repeated but there is a small gap between different videos
     * with omxplayer there will also be a short gap between the repeats
     
-* if you have only one video then omxplayer can also loop seamlessly (and wth audio)
-* the last supported Rasperry Pi OS image version is 2021-05-07 (https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2021-05-28/2021-05-07-raspios-buster-armhf-lite.zip)
+* if you have only one video then omxplayer will also loop seamlessly (and with audio)
+* the last supported Rasperry Pi OS image version is [2021-05-07-raspios-buster-armhf-lite.zip](https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2021-05-28/2021-05-07-raspios-buster-armhf-lite.zip)
 
 #### keyboard commands:
 if enabled (via config file) the following keyboard commands are active:
