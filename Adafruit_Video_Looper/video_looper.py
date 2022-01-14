@@ -269,8 +269,8 @@ class VideoLooper:
         """Print text with the number of loaded movies and a quick countdown
         message if the on screen display is enabled.
         """
-        # Print message to console with number of movies in playlist.
-        message = 'Found {0} movie{1}.'.format(playlist.length(), 
+        # Print message to console with number of media files in playlist.
+        message = 'Found {0} media file{1}.'.format(playlist.length(), 
             's' if playlist.length() >= 2 else '')
         self._print(message)
         # Do nothing else if the OSD is turned off.
