@@ -6,12 +6,18 @@ Easy to use out of the box but also has a lot of settings to make it fit your us
 
 If you miss a feature just post an issue on github. (https://github.com/adafruit/pi_video_looper)
 
-Currently only Raspberry Pi OS Lite __(Legacy)__ is supported.
-You can download it from here: https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-legacy
+With the current Raspberry Pi OS Version 11 (bullseye) only cvlc and image_player are supported.  
+If you still want or need to use omxplayer or hello_video you need to install Raspberry Pi OS Lite __(Legacy)__.  
+You can download it from here: https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-legac
 
 There are also pre-compiled versions available from: https://videolooper.de/ (but they might not contain the latest version of pi_video_looper)
 
 ## Changelog
+#### new in v1.1.0
+ - NEW PLAYER: cvlc  
+   since Rasperry Pi OS 11 (bullseye) omxplayer and hello_video are no longer supported.  
+   cvlc can be used with the legacy os as well. The install script automatically installs the appropriate dependencies for your system.
+
 #### new in v1.0.10
  - NEW PLAYER: "Image Player" (beta)  
    The new player can display images instead of videos (slideshow).  
