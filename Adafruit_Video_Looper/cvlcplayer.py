@@ -27,6 +27,7 @@ class CVLCPlayer:
     def _get_temp_directory(self):
         if not self._temp_directory:
             self._temp_directory = tempfile.mkdtemp()
+            os.chmod(self._temp_directory, 777)
         return self._temp_directory
 
     def _load_config(self, config):
@@ -35,22 +36,20 @@ class CVLCPlayer:
                                  .split(',')
         self._extra_args = config.get('cvlc', 'extra_args').split()
         self._sound = config.get('cvlc', 'sound').lower()
-        assert self._sound in ('both', 'alsa'), 'Unknown cvlc sound configuration value: {0} Expected both or alsa.'.format(self._sound)
+        assert self._sound in ('hdmi', 'alsa'), 'Unknown cvlc sound configuration value: {0} Expected both or alsa.'.format(self._sound)
         self._alsa_hw_device = parse_hw_device(config.get('alsa', 'hw_device'))
         if self._alsa_hw_device != None and self._sound == 'alsa':
             self._sound_args = ['--aout=alsa', '--alsa-audio-device=hw:{},{}'.format(self._alsa_hw_device[0], self._alsa_hw_device[1])]
-        #
-        # maybe use: --video-title and --video-title-timeout or   --sub-file with the below code
-        #
-        #self._show_titles = config.getboolean('cvlc', 'show_titles')
-        #if self._show_titles:
-        #    title_duration = config.getint('cvlc', 'title_duration')
-        #    if title_duration >= 0:
-        #        m, s = divmod(title_duration, 60)
-        #        h, m = divmod(m, 60)
-        #        self._subtitle_header = '00:00:00,00 --> {:d}:{:02d}:{:02d},00\n'.format(h, m, s)
-        #    else:
-        #        self._subtitle_header = '00:00:00,00 --> 99:59:59,00\n'
+
+        self._show_titles = config.getboolean('cvlc', 'show_titles')
+        if self._show_titles:
+            title_duration = config.getint('cvlc', 'title_duration')
+            if title_duration >= 0:
+                m, s = divmod(title_duration, 60)
+                h, m = divmod(m, 60)
+                self._subtitle_header = '00:00:00,00 --> {:d}:{:02d}:{:02d},00\n'.format(h, m, s)
+            else:
+                self._subtitle_header = '00:00:00,00 --> 99:59:59,00\n'
 
     def supported_extensions(self):
         """Return list of supported file extensions."""
@@ -60,7 +59,7 @@ class CVLCPlayer:
         """Play the provided movie file, optionally looping it repeatedly."""
         self.stop(3)  # Up to 3 second delay to let the old player stop.
         # Assemble list of arguments.
-        args = ['sudo', '-u','pi', 'cvlc']
+        args = ['sudo', '-u','pi', 'cvlc', '-q']
         if self._sound_args:
             args.extend(self._sound_args)     # Add sound arguments.
         args.extend(self._extra_args)     # Add extra arguments from config.
@@ -72,14 +71,17 @@ class CVLCPlayer:
             args.append('--loop')  # Add loop parameter if necessary.
         else:
             args.append('--play-and-exit')
-        #if self._show_titles and movie.title:
-        #    srt_path = os.path.join(self._get_temp_directory(), 'video_looper.srt')
-        #    with open(srt_path, 'w') as f:
-        #        f.write(self._subtitle_header)
-        #        f.write(movie.title)
-        #    args.extend(['--subtitles', srt_path])
-        #else:
-        #    args.append('--no-osd')
+        
+        #video title display
+        if self._show_titles and movie.title:
+            srt_path = os.path.join(self._get_temp_directory(), 'video_looper.srt')
+            with open(srt_path, 'w') as f:
+                f.write(self._subtitle_header)
+                f.write(movie.title)
+            args.append('--sub-file={}'.format(srt_path))
+        else:
+            args.append('--no-osd')
+        
         args.append(movie.filename)       # Add movie file path.
         #DEBUG ONLY:
         print(args)
