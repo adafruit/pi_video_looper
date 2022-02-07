@@ -93,7 +93,7 @@ class ImagePlayer:
     def stop(self, block_timeout_sec=0):
         """Stop the image display."""
         self._blank_screen()
-        self._startTime = -monotonic()
+        self._startTime = self._startTime-self._duration*self._loop
 
     def _blank_screen(self, flip=True):
         """Render a blank screen filled with the background color and optional the background image."""
