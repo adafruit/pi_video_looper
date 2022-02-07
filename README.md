@@ -14,6 +14,7 @@ There are also pre-compiled versions available from <https://videolooper.de> (bu
 ## Changelog
 #### v1.0.11
  - fixed skip bug with image_player
+ - fixed possible dependency issue
 
 #### new in v1.0.10
  - NEW PLAYER: "Image Player" (beta)  
