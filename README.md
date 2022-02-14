@@ -12,6 +12,10 @@ You can download it from here: <https://www.raspberrypi.com/software/operating-s
 There are also pre-compiled versions available from <https://videolooper.de> (but they might not always contain the latest version of pi_video_looper)
 
 ## Changelog
+#### v1.0.11
+ - fixed skip bug with image_player
+ - fixed possible dependency issue
+
 #### new in v1.0.10
  - NEW PLAYER: "Image Player" (beta)  
    Displays images in a slideshow instead of playing videos.

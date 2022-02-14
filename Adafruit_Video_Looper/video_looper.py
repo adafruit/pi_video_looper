@@ -288,8 +288,8 @@ class VideoLooper:
             # Clear screen and draw text with line1 above line2 and all
             # centered horizontally and vertically.
             self._screen.fill(self._bgcolor)
-            self._screen.blit(label1, (sw/2-l1w/2, sh/2-l2h/2-l1h))
-            self._screen.blit(label2, (sw/2-l2w/2, sh/2-l2h/2))
+            self._screen.blit(label1, (round(sw/2-l1w/2), round(sh/2-l2h/2-l1h)))
+            self._screen.blit(label2, (round(sw/2-l2w/2), round(sh/2-l2h/2)))
             pygame.display.update()
             # Pause for a second between each frame.
             time.sleep(1)
