@@ -75,7 +75,13 @@ class VideoLooper:
         pygame.display.init()
         pygame.font.init()
         pygame.mouse.set_visible(False)
-        self._screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN | pygame.NOFRAME)
+        # check if output is properly connected (=has a resolution)
+        # otherwise fall back to FullHD - maybe move the fallback resolution to the ini
+        if(pygame.display.Info().current_w+pygame.display.Info().current_h>0):
+            init_size = (0,0)
+        else:
+            init_size = (1920,1080)
+        self._screen = pygame.display.set_mode(init_size, pygame.FULLSCREEN | pygame.NOFRAME)
         self._size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
         self._bgimage = self._load_bgimage() #a tupple with pyimage, xpos, ypos
         self._blank_screen()
