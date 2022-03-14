@@ -138,4 +138,4 @@ The following keyboard commands are active by default (can be disabled in the [v
 * nothing happening (screen flashes once) when in copymode and new drive is plugged in?
     * check if you have the "password file" on your drive (see copymode explained above)
 * log output can be found in `/var/log/supervisor/`  
-  Use `sudo tail -f /var/log/supervisor/video_looper-stdout*` and `sudo tail -f /var/log/supervisor/video_looper-stderr` to view the logs.
+  Use `sudo tail -f /var/log/supervisor/video_looper-stdout*` and `sudo tail -f /var/log/supervisor/video_looper-stderr*` to view the logs.
