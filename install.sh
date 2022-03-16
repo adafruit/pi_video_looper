@@ -41,7 +41,7 @@ mkdir -p /mnt/usbdrive0 # This is very important if you put your system in reado
 mkdir -p /home/pi/video # create default video directory
 
 pip3 install setuptools
-python3 setup.py install --force
+pip3 install ./Adafruit_Video_Looper
 
 cp ./assets/video_looper.ini /boot/video_looper.ini
 
