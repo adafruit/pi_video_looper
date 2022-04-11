@@ -2,7 +2,7 @@
 # Author: Tony DiCola
 # License: GNU GPLv2, see LICENSE.txt
 import random
-from typing import Optional
+from typing import Optional, Union
 
 random.seed()
 
@@ -30,6 +30,8 @@ class Movie:
         return self.filename < other.filename
 
     def __eq__(self, other):
+        if isinstance(other, str):
+            return self.filename == other
         return self.filename == other.filename
 
     def __str__(self):
@@ -45,6 +47,7 @@ class Playlist:
         """Create a playlist from the provided list of movies."""
         self._movies = movies
         self._index = None
+        self._next = None
 
     def get_next(self, is_random, resume = False) -> Movie:
         """Get the next movie in the playlist. Will loop to start of playlist
@@ -53,6 +56,11 @@ class Playlist:
         # Check if no movies are in the playlist and return nothing.
         if len(self._movies) == 0:
             return None
+        
+        # Check if next movie is set and jump directly there:
+        if self._next is not None and self._next >= 0 and self._next <= self.length():
+            return self._movies[self._next]; self._next = None
+        
         # Start Random movie
         if is_random:
             self._index = random.randrange(0, self.length())
@@ -79,6 +87,23 @@ class Playlist:
                 f.write(str(self._index))
 
         return self._movies[self._index]
+    
+    # sets next by filename or Movie object
+    def set_next(self, thing: Union[Movie, str]):
+        if isinstance(thing, Movie):
+            if (thing in self._movies):
+                self._next(thing)
+        elif isinstance(thing, str):
+            if thing in self._movies:
+                self._next = self._movies[self._movies.index(thing)]
+
+    # sets next to the absolut index
+    def jump(self, index:int):
+        self._next = index
+    
+    # sets next relative to current index
+    def seek(self, amount:int):
+        self._next = (self._index+amount)%self.length()
 
     def length(self):
         """Return the number of movies in the playlist."""
