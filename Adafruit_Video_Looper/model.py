@@ -25,7 +25,10 @@ class Movie:
 
     def clear_playcount(self):
         self.playcount = 0
-
+        
+    def finish_playing(self):
+        self.playcount = self.repeats+1
+    
     def __lt__(self, other):
         return self.filename < other.filename
 
@@ -59,7 +62,9 @@ class Playlist:
         
         # Check if next movie is set and jump directly there:
         if self._next is not None and self._next >= 0 and self._next <= self.length():
-            return self._movies[self._next]; self._next = None
+            self._index=self._next
+            self._next = None
+            return self._movies[self._index]
         
         # Start Random movie
         if is_random:
@@ -99,12 +104,20 @@ class Playlist:
 
     # sets next to the absolut index
     def jump(self, index:int):
+        self.clear_all_playcounts()
+        self._movies[self._index].finish_playing()
         self._next = index
     
     # sets next relative to current index
     def seek(self, amount:int):
+        self.clear_all_playcounts()
+        self._movies[self._index].finish_playing()
         self._next = (self._index+amount)%self.length()
 
     def length(self):
         """Return the number of movies in the playlist."""
         return len(self._movies)
+
+    def clear_all_playcounts(self):
+        for movie in self._movies:
+            movie.clear_playcount()
