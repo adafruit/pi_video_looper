@@ -1,5 +1,7 @@
 #!/bin/sh
 
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 # Error out if anything fails.
 set -e
 
@@ -18,6 +20,7 @@ if [ "$*" != "no_hello_video" ]
 then
 	echo "Installing hello_video..."
 	echo "========================="
+	cd $SCRIPT_DIR
 	apt -y install git build-essential python3-dev
 	git clone https://github.com/adafruit/pi_hello_video
 	cd pi_hello_video
@@ -34,18 +37,16 @@ fi
 echo "Installing video_looper program..."
 echo "=================================="
 
+# change the directoy to the script location
+cd $SCRIPT_DIR
+
 mkdir -p /mnt/usbdrive0 # This is very important if you put your system in readonly after
 mkdir -p /home/pi/video # create default video directory
 chown pi:root /home/pi/video
 
-# change the directoy to the module location for install
-cd $(dirname "$0")/Adafruit_Video_Looper/
+python3 -m pip install setuptools
+python3 -m pip install ./Adafruit_Video_Looper
 
-pip3 install setuptools
-pip3 install .
-
-# change the directoy to the script location
-cd $(dirname "$0")
 cp ./assets/video_looper.ini /boot/video_looper.ini
 
 echo "Configuring video_looper to run on start..."
