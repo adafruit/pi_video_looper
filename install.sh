@@ -34,16 +34,18 @@ fi
 echo "Installing video_looper program..."
 echo "=================================="
 
-# change the directoy to the script location
-cd "$(dirname "$0")"
-
 mkdir -p /mnt/usbdrive0 # This is very important if you put your system in readonly after
 mkdir -p /home/pi/video # create default video directory
 chown pi:root /home/pi/video
 
+# change the directoy to the module location for install
+cd $(dirname "$0")/Adafruit_Video_Looper/
+
 pip3 install setuptools
 pip3 install .
 
+# change the directoy to the script location
+cd $(dirname "$0")
 cp ./assets/video_looper.ini /boot/video_looper.ini
 
 echo "Configuring video_looper to run on start..."
