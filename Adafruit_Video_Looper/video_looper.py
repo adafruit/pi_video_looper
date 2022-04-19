@@ -365,6 +365,7 @@ class VideoLooper:
                     self.quit()
                 if event.key == pygame.K_k:
                     self._print("k was pressed. skipping...")
+                    self._playlist.seek(1)
                     self._player.stop(3)
                 if event.key == pygame.K_s:
                     if self._playbackStopped:

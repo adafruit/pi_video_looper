@@ -110,9 +110,7 @@ class Playlist:
     
     # sets next relative to current index
     def seek(self, amount:int):
-        self.clear_all_playcounts()
-        self._movies[self._index].finish_playing()
-        self._next = (self._index+amount)%self.length()
+        self.jump((self._index+amount)%self.length())
 
     def length(self):
         """Return the number of movies in the playlist."""
