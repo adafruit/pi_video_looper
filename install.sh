@@ -45,7 +45,7 @@ mkdir -p /home/pi/video # create default video directory
 chown pi:root /home/pi/video
 
 python3 -m pip install setuptools
-python3 -m pip install ./Adafruit_Video_Looper
+python3 -m pip install .
 
 cp ./assets/video_looper.ini /boot/video_looper.ini
 
