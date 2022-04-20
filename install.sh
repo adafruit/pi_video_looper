@@ -14,7 +14,7 @@ fi
 
 echo "Installing dependencies..."
 echo "=========================="
-apt update && apt -y install python3 python3-pip python3-pygame omxplayer ntfs-3g exfat-fuse python3-wheel
+apt update && apt -y install python3 python3-pip python3-pygame omxplayer ntfs-3g exfat-fuse python3-wheel libsdl2-ttf-2.0-0 libsdl2-image-2.0-0
 
 if [ "$*" != "no_hello_video" ]
 then
