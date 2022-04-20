@@ -14,7 +14,7 @@ fi
 
 echo "Installing dependencies..."
 echo "=========================="
-apt update && apt -y install python3 python3-pip python3-pygame supervisor omxplayer ntfs-3g exfat-fuse python3-wheel
+apt update && apt -y install python3 python3-pip python3-pygame omxplayer ntfs-3g exfat-fuse python3-wheel
 
 if [ "$*" != "no_hello_video" ]
 then
@@ -52,8 +52,13 @@ cp ./assets/video_looper.ini /boot/video_looper.ini
 echo "Configuring video_looper to run on start..."
 echo "==========================================="
 
-cp ./assets/video_looper.conf /etc/supervisor/conf.d/
+cp ./assets/video_looper.service /etc/systemd/system/video_looper.service
+chmod 644 /etc/systemd/system/video_looper.service
 
-service supervisor restart
+systemctl daemon-reload
+systemctl enable video_looper
+systemctl start video_looper
+sleep 1
+systemctl status video_looper
 
 echo "Finished!"

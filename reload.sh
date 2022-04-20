@@ -7,4 +7,4 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 # reload settings by restarting the video_looper
-supervisorctl restart video_looper
+systemctl restart video_looper
