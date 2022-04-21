@@ -25,8 +25,8 @@ class USBDriveMounter:
     def remove_all(self):
         """Unmount and remove mount points for all mounted drives."""
         for path in glob.glob(self._root + '*'):
-            subprocess.call(['umount', '-l', path])
-            subprocess.call(['rm', '-r', path])
+            subprocess.call(['sudo', 'umount', '-l', path])
+            subprocess.call(['sudo', 'rm', '-r', path])
 
     def mount_all(self):
         """Mount all attached USB drives.  Readonly is a boolean that specifies
@@ -39,8 +39,8 @@ class USBDriveMounter:
         # Mount each drive under the mount root.
         for i, node in enumerate(nodes):
             path = self._root + str(i)
-            subprocess.call(['mkdir', path])
-            args = ['mount']
+            subprocess.call(['sudo', 'mkdir', path])
+            args = ['sudo', 'mount']
             if self._readonly:
                 args.append('-r')
             args.extend([node, path])

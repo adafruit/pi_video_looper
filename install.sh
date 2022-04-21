@@ -5,28 +5,32 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # Error out if anything fails.
 set -e
 
-# Make sure script is run as root.
-if [ "$(id -u)" != "0" ]; then
-  echo "Must be run as root with sudo! Try: sudo ./install.sh"
-  exit 1
+# Extra steps for DietPi installations
+if id "pi" &>/dev/null; then
+	echo "pi user exists"
+else
+    echo "Creating pi user"
+	sudo useradd -m -u 1000 -G adm,audio,video,sudo,adm pi
+	sudo mkdir -p /run/user/1000
+	sudo chmod 700 /run/user/1000
 fi
 
 
 echo "Installing dependencies..."
 echo "=========================="
-apt update && apt -y install python3 python3-pip python3-pygame omxplayer ntfs-3g exfat-fuse python3-wheel libsdl2-ttf-2.0-0 libsdl2-image-2.0-0
+sudo apt update && sudo apt -y install python3 python3-pip python3-pygame omxplayer ntfs-3g exfat-fuse python3-wheel libsdl2-ttf-2.0-0 libsdl2-image-2.0-0
 
 if [ "$*" != "no_hello_video" ]
 then
 	echo "Installing hello_video..."
 	echo "========================="
 	cd $SCRIPT_DIR
-	apt -y install git build-essential python3-dev
+	sudo apt -y install git build-essential python3-dev
 	git clone https://github.com/adafruit/pi_hello_video
 	cd pi_hello_video
 	./rebuild.sh
 	cd hello_video
-	make install
+	sudo make install
 	cd ../..
 	rm -rf pi_hello_video
 else
@@ -40,25 +44,24 @@ echo "=================================="
 # change the directoy to the script location
 cd $SCRIPT_DIR
 
-mkdir -p /mnt/usbdrive0 # This is very important if you put your system in readonly after
-mkdir -p /home/pi/video # create default video directory
+sudo mkdir -p /mnt/usbdrive0 # This is very important if you put your system in readonly after
+sudo mkdir -p /home/pi/video # create default video directory
 chown pi:root /home/pi/video
 
-python3 -m pip install setuptools
 python3 -m pip install .
 
-cp ./assets/video_looper.ini /boot/video_looper.ini
+sudo cp ./assets/video_looper.ini /boot/video_looper.ini
 
 echo "Configuring video_looper to run on start..."
 echo "==========================================="
 
-cp ./assets/video_looper.service /etc/systemd/system/video_looper.service
-chmod 644 /etc/systemd/system/video_looper.service
+sudo cp ./assets/video_looper.service /etc/systemd/system/video_looper.service
+sudo chmod 644 /etc/systemd/system/video_looper.service
 
-systemctl daemon-reload
-systemctl enable video_looper
-systemctl start video_looper
+sudo systemctl daemon-reload
+sudo systemctl enable video_looper
+sudo systemctl start video_looper
 sleep 1
-systemctl status video_looper
+sudo systemctl status video_looper
 
 echo "Finished!"

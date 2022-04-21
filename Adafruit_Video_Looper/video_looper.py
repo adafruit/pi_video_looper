@@ -457,13 +457,15 @@ class VideoLooper:
         if shutdown:
             os.system("sudo shutdown now")
         self._running = False
-
-
-
+        
     def signal_quit(self, signal, frame):
         """Shut down the program, meant to by called by signal handler."""
         self._print("received signal to quit")
         self.quit()
+
+    def signal_hang(self, signal, frame):
+        pass
+
 
 # Main entry point.
 if __name__ == '__main__':
@@ -478,5 +480,6 @@ if __name__ == '__main__':
     # Configure signal handlers to quit on TERM or INT signal.
     signal.signal(signal.SIGTERM, videolooper.signal_quit)
     signal.signal(signal.SIGINT, videolooper.signal_quit)
+    signal.signal(signal.SIGHUP, videolooper.signal_hang)
     # Run the main loop.
     videolooper.run()
