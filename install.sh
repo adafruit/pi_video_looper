@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
@@ -6,7 +6,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 set -e
 
 # Extra steps for DietPi installations
-if id "pi" &>/dev/null; then
+if id "pi" >/dev/null 2>&1; then
 	echo "pi user exists"
 else
     echo "Creating pi user"
@@ -41,21 +41,19 @@ fi
 echo "Installing video_looper program..."
 echo "=================================="
 
-# change the directoy to the script location
-cd $SCRIPT_DIR
-
 sudo mkdir -p /mnt/usbdrive0 # This is very important if you put your system in readonly after
 sudo mkdir -p /home/pi/video # create default video directory
-chown pi:root /home/pi/video
+sudo chown pi:root /home/pi/video
 
-python3 -m pip install .
+sudo -u pi /usr/bin/python3 -m pip install --user --upgrade pip
+sudo -u pi /usr/bin/python3 -m pip install --user $SCRIPT_DIR
 
-sudo cp ./assets/video_looper.ini /boot/video_looper.ini
+sudo cp $SCRIPT_DIR/assets/video_looper.ini /boot/video_looper.ini
 
 echo "Configuring video_looper to run on start..."
 echo "==========================================="
 
-sudo cp ./assets/video_looper.service /etc/systemd/system/video_looper.service
+sudo cp $SCRIPT_DIR/assets/video_looper.service /etc/systemd/system/video_looper.service
 sudo chmod 644 /etc/systemd/system/video_looper.service
 
 sudo systemctl daemon-reload
