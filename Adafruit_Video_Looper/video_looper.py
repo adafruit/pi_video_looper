@@ -17,7 +17,7 @@ from datetime import datetime
 from .alsa_config import parse_hw_device
 from .model import Playlist, Movie
 from .playlist_builders import build_playlist_m3u
-
+from datetime import datetime
 
 # Basic video looper architecure:
 #
@@ -56,13 +56,16 @@ class VideoLooper:
         # Load other configuration values.
         self._osd = self._config.getboolean('video_looper', 'osd')
         self._is_random = self._config.getboolean('video_looper', 'is_random')
-        self._resume_playlist = self._config.getboolean('video_looper', 'resume_playlist') 
+        self._resume_playlist = self._config.getboolean('video_looper', 'resume_playlist')
         self._keyboard_control = self._config.getboolean('video_looper', 'keyboard_control')
         self._copyloader = self._config.getboolean('copymode', 'copyloader')
         # Get seconds for countdown from config
         self._countdown_time = self._config.getint('video_looper', 'countdown_time')
         # Get seconds for waittime bewteen files from config
         self._wait_time = self._config.getint('video_looper', 'wait_time')
+        # Get timedisplay settings
+        self._datetime_display = self._config.getboolean('video_looper', 'datetime_display')
+        self._datetime_display_format = self._config.get('video_looper', 'datetime_display_format', raw=True)
         # Parse string of 3 comma separated values like "255, 255, 255" into
         # list of ints for colors.
         self._bgcolor = list(map(int, self._config.get('video_looper', 'bgcolor')
@@ -294,6 +297,17 @@ class VideoLooper:
             # Pause for a second between each frame.
             time.sleep(1)
 
+    def _display_datetime(self):
+        sw, sh = self._screen.get_size()
+        for i in range(self._wait_time):
+            now = datetime.now()
+            timeLabel = self._render_text(now.strftime(self._datetime_display_format), self._big_font)
+            lw, lh = timeLabel.get_size()
+            self._screen.fill(self._bgcolor)
+            self._screen.blit(timeLabel, (round(sw/2-lw/2), round(sh/2-lh/2)))
+            pygame.display.update()
+            time.sleep(1)
+
     def _idle_message(self):
         """Print idle message from file reader."""
         # Print message to console.
@@ -402,8 +416,11 @@ class VideoLooper:
                     movie.was_played()
 
                     if self._wait_time > 0 and not self._firstStart:
-                        self._print('Waiting for: {0} seconds'.format(self._wait_time))
-                        time.sleep(self._wait_time)
+                        if(self._datetime_display):
+                            self._display_datetime()
+                        else:
+                            self._print('Waiting for: {0} seconds'.format(self._wait_time))
+                            time.sleep(self._wait_time)
                     self._firstStart = False
 
                     #generating infotext
