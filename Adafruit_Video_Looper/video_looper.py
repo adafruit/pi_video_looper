@@ -302,11 +302,28 @@ class VideoLooper:
         for i in range(self._wait_time):
             now = datetime.now()
             timeLabel = self._render_text(now.strftime(self._datetime_display_format), self._big_font)
-            lw, lh = timeLabel.get_size()
+        l1w, l1h = timeLabel.get_size()
+        sw, sh = self._screen.get_size()
+            timeLabel2 = self._render_text(now.strftime(self._datetime_display_format), self._big_font)
+            l2w, l2h = timeLabel2.get_size()
             self._screen.fill(self._bgcolor)
-            self._screen.blit(timeLabel, (round(sw/2-lw/2), round(sh/2-lh/2)))
+            self._screen.blit(timelabel, (round(sw/2-l1w/2), round(sh/2-l2h/2-l1h)))
+            self._screen.blit(timelabel2, (round(sw/2-l2w/2), round(sh/2-l2h/2)))
             pygame.display.update()
+            # Pause for a second between each frame.
             time.sleep(1)
+
+            
+#    def _display_datetime(self):
+#        sw, sh = self._screen.get_size()
+#        for i in range(self._wait_time):
+#            now = datetime.now()
+#            timeLabel = self._render_text(now.strftime(self._datetime_display_format), self._big_font)
+#            lw, lh = timeLabel.get_size()
+#            self._screen.fill(self._bgcolor)
+#            self._screen.blit(timeLabel, (round(sw/2-lw/2), round(sh/2-lh/2)))
+#            pygame.display.update()
+#            time.sleep(1)
 
     def _idle_message(self):
         """Print idle message from file reader."""
