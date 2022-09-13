@@ -14,6 +14,8 @@ There are also pre-compiled images available from <https://videolooper.de> (but 
 
 ## Changelog
 #### new in v1.0.12
+ - date/time display option
+   allows you to display the current date and time between the videos
  - added "back" keyboard shortcut to play previous file
 
 #### v1.0.11
@@ -129,6 +131,8 @@ Note: files with the same name always get overwritten.
     * with omxplayer there will also be a short gap between the repeats
     
 * if you have only one video then omxplayer will also loop seamlessly (and with audio)
+
+* to reduce the wear of the SD card and potentially extend the lifespan of the player, you could enable the overlay filesystem via `raspi-config` and select Performance Options->Overlay Filesystem
 
 #### keyboard commands:
 The following keyboard commands are active by default (can be disabled in the [video_looper.ini](https://github.com/adafruit/pi_video_looper/blob/master/assets/video_looper.ini)):
