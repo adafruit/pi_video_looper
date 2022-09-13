@@ -13,6 +13,9 @@ For a detailed tutorial visit: <https://learn.adafruit.com/raspberry-pi-video-lo
 There are also pre-compiled images available from <https://videolooper.de> (but they might not always contain the latest version of pi_video_looper)
 
 ## Changelog
+#### new in v1.0.12
+ - added "back" keyboard shortcut to play previous file
+
 #### v1.0.11
  - fixed skip bug with image_player
  - fixed possible dependency issue
@@ -131,6 +134,7 @@ Note: files with the same name always get overwritten.
 The following keyboard commands are active by default (can be disabled in the [video_looper.ini](https://github.com/adafruit/pi_video_looper/blob/master/assets/video_looper.ini)):
 * "ESC" - stops playback and exits video_looper
 * "k" - sKip - stops the playback of current file and plays next file
+* "b" - Back - stops the playback of current file and plays previous file
 * "s" - Stop/Start - stops or starts playback of current file
 * "p" - Power off - stop playback and shutdown RPi
 
