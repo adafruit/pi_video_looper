@@ -85,6 +85,7 @@ class VideoLooper:
         # Load configured video player and file reader modules.
         self._player = self._load_player()
         self._reader = self._load_file_reader()
+        self._playlist = None
         # Load ALSA hardware configuration.
         self._alsa_hw_device = parse_hw_device(self._config.get('alsa', 'hw_device'))
         self._alsa_hw_vol_control = self._config.get('alsa', 'hw_vol_control')
@@ -378,6 +379,7 @@ class VideoLooper:
                     self.quit()
                 if event.key == pygame.K_k:
                     self._print("k was pressed. skipping...")
+                    self._playlist.seek(1)
                     self._player.stop(3)
                 if event.key == pygame.K_s:
                     if self._playbackStopped:
@@ -390,16 +392,21 @@ class VideoLooper:
                 if event.key == pygame.K_p:
                     self._print("p was pressed. shutting down...")
                     self.quit(True)
+                if event.key == pygame.K_b:
+                    self._print("b was pressed. jumping back...")
+                    self._playlist.seek(-1)
+                    self._player.stop(3)
+                    
                     
 
 
     def run(self):
         """Main program loop.  Will never return!"""
         # Get playlist of movies to play from file reader.
-        playlist = self._build_playlist()
-        self._prepare_to_run_playlist(playlist)
+        self._playlist = self._build_playlist()
+        self._prepare_to_run_playlist(self._playlist)
         self._set_hardware_volume()
-        movie = playlist.get_next(self._is_random, self._resume_playlist)
+        movie = self._playlist.get_next(self._is_random, self._resume_playlist)
         # Main loop to play videos in the playlist and listen for file changes.
         while self._running:
             # Load and play a new movie if nothing is playing.
@@ -408,10 +415,10 @@ class VideoLooper:
 
                     if movie.playcount >= movie.repeats:
                         movie.clear_playcount()
-                        movie = playlist.get_next(self._is_random, self._resume_playlist)
+                        movie = self._playlist.get_next(self._is_random, self._resume_playlist)
                     elif self._player.can_loop_count() and movie.playcount > 0:
                         movie.clear_playcount()
-                        movie = playlist.get_next(self._is_random, self._resume_playlist)
+                        movie = self._playlist.get_next(self._is_random, self._resume_playlist)
 
                     movie.was_played()
 
@@ -428,13 +435,13 @@ class VideoLooper:
                         infotext = '{0} time{1} (player counts loops)'.format(movie.repeats, "s" if movie.repeats>1 else "")
                     else:
                         infotext = '{0}/{1}'.format(movie.playcount, movie.repeats)
-                    if playlist.length()==1:
+                    if self._playlist.length()==1:
                         infotext = '(endless loop)'
 
                     # Start playing the first available movie.
                     self._print('Playing movie: {0} {1}'.format(movie, infotext))
                     # todo: maybe clear screen to black so that background (image/color) is not visible for videos with a resolution that is < screen resolution
-                    self._player.play(movie, loop=-1 if playlist.length()==1 else None, vol = self._sound_vol)
+                    self._player.play(movie, loop=-1 if self._playlist.length()==1 else None, vol = self._sound_vol)
 
             # Check for changes in the file search path (like USB drives added)
             # and rebuild the playlist.
@@ -444,13 +451,13 @@ class VideoLooper:
                                       # player to stop.
                 self._print("player stopped")
                 # Rebuild playlist and show countdown again (if OSD enabled).
-                playlist = self._build_playlist()
+                self._playlist = self._build_playlist()
                 #refresh background image
                 if self._copyloader:
                     self._bgimage = self._load_bgimage()
-                self._prepare_to_run_playlist(playlist)
+                self._prepare_to_run_playlist(self._playlist)
                 self._set_hardware_volume()
-                movie = playlist.get_next(self._is_random, self._resume_playlist)
+                movie = self._playlist.get_next(self._is_random, self._resume_playlist)
 
             # Give the CPU some time to do other tasks. low values increase "responsiveness to changes" and reduce the pause between files
             # but increase CPU usage
