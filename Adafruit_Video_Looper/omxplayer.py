@@ -73,9 +73,16 @@ class OMXPlayer:
             args.extend(['--subtitles', srt_path])
         args.append(movie.filename)       # Add movie file path.
         # Run omxplayer process and direct standard output to /dev/null.
+        # Establish input pipe for commands
         self._process = subprocess.Popen(args,
                                          stdout=open(os.devnull, 'wb'),
+                                         stdin=subprocess.PIPE,
                                          close_fds=True)
+
+    def pause(self):
+        if self.is_playing:
+            self._process.stdin.write('p'.encode())
+            self._process.stdin.flush()
 
     def is_playing(self):
         """Return true if the video player is running, false otherwise."""
