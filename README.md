@@ -13,6 +13,8 @@ For a detailed tutorial visit: <https://learn.adafruit.com/raspberry-pi-video-lo
 There are also pre-compiled images available from <https://videolooper.de> (but they might not always contain the latest version of pi_video_looper)
 
 ## Changelog
+#### new in issue 163
+ - pressing spacebar while pause/resume omxplayer
 #### new in v1.0.12
  - date/time display option
    allows you to display the current date and time between the videos
@@ -141,6 +143,7 @@ The following keyboard commands are active by default (can be disabled in the [v
 * "b" - Back - stops the playback of current file and plays previous file
 * "s" - Stop/Start - stops or starts playback of current file
 * "p" - Power off - stop playback and shutdown RPi
+* " " - (space bar) - Pause/Resume the omxplayer video
 
 #### troubleshooting:
 * nothing happening (screen flashes once) when in copymode and new drive is plugged in?
