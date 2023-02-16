@@ -13,6 +13,11 @@ For a detailed tutorial visit: <https://learn.adafruit.com/raspberry-pi-video-lo
 There are also pre-compiled images available from <https://videolooper.de> (but they might not always contain the latest version of pi_video_looper)
 
 ## Changelog
+#### new in v1.0.13
+ - Additional date/time functionality options added.
+   Allows you to add a second smaller line to display things like the date correctly.
+ - Added an array to add a suffix to the day if required to display st, nd, rd and th on the correct days.
+
 #### new in v1.0.12
  - date/time display option
    allows you to display the current date and time between the videos
