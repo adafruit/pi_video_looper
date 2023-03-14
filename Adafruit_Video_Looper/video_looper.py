@@ -99,6 +99,7 @@ class VideoLooper:
         # Set other static internal state.
         self._extensions = '|'.join(self._player.supported_extensions())
         self._small_font = pygame.font.Font(None, 50)
+        self._medium_font   = pygame.font.Font(None, 96)
         self._big_font   = pygame.font.Font(None, 250)
         self._running    = True
         self._playbackStopped = False
@@ -299,14 +300,51 @@ class VideoLooper:
             time.sleep(1)
 
     def _display_datetime(self):
+        # This handles the array and decides on the correct suffix
+        def get_day_suffix(day):
+            if day in [1, 21, 31]:
+                suffix = "st"
+            elif day in [2, 22]:
+                suffix = "nd"
+            elif day in [3, 23]:
+                suffix = "rd"
+            else:
+                suffix = "th"
+            return suffix
+
         sw, sh = self._screen.get_size()
+
         for i in range(self._wait_time):
             now = datetime.now()
-            timeLabel = self._render_text(now.strftime(self._datetime_display_format), self._big_font)
-            lw, lh = timeLabel.get_size()
+
+            # Get the day suffix
+            day = int(now.strftime('%d'))
+            suffix = get_day_suffix(day)
+
+            # Format the time and date strings
+            time_format, date_format = self._datetime_display_format.split(',')
+            time_str = now.strftime(time_format)
+            date_str = now.strftime(date_format.replace('%d{SUFFIX}', f'%d{suffix}'))
+
+            # Render the time and date labels
+            timeLabel = self._render_text(time_str, self._big_font)
+            dateLabel = self._render_text(date_str, self._medium_font)
+
+            # Calculate the label positions
+            l1w, l1h = timeLabel.get_size()
+            l2w, l2h = dateLabel.get_size()
+
+            time_x = sw // 2 - l1w // 2
+            time_y = sh // 2 - (l1h + l2h) // 2
+            date_x = sw // 2 - l2w // 2
+            date_y = time_y + l1h + 50
+
+            # Draw the labels to the screen
             self._screen.fill(self._bgcolor)
-            self._screen.blit(timeLabel, (round(sw/2-lw/2), round(sh/2-lh/2)))
+            self._screen.blit(timeLabel, (time_x, time_y))
+            self._screen.blit(dateLabel, (date_x, date_y))
             pygame.display.update()
+
             time.sleep(1)
 
     def _idle_message(self):
