@@ -99,6 +99,7 @@ class VideoLooper:
         # Set other static internal state.
         self._extensions = '|'.join(self._player.supported_extensions())
         self._small_font = pygame.font.Font(None, 50)
+        self._medium_font   = pygame.font.Font(None, 96)
         self._big_font   = pygame.font.Font(None, 250)
         self._running    = True
         self._playbackStopped = False
@@ -327,7 +328,7 @@ class VideoLooper:
 
             # Render the time and date labels
             timeLabel = self._render_text(time_str, self._big_font)
-            dateLabel = self._render_text(date_str, pygame.font.Font(None, 96))
+            dateLabel = self._render_text(date_str, self._medium_font)
 
             # Calculate the label positions
             l1w, l1h = timeLabel.get_size()
