@@ -13,8 +13,6 @@ For a detailed tutorial visit: <https://learn.adafruit.com/raspberry-pi-video-lo
 There are also pre-compiled images available from <https://videolooper.de> (but they might not always contain the latest version of pi_video_looper)
 
 ## Changelog
-#### new in issue 163
- - pressing spacebar while pause/resume omxplayer
 #### new in v1.0.12
  - date/time display option
    allows you to display the current date and time between the videos
