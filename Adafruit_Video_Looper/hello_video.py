@@ -44,7 +44,7 @@ class HelloVideoPlayer:
                                          close_fds=True)
     def pause(self):
         #todo add pause to HelloVideoPlayer
-        print("Pause not supported in HelloVideoPlayer")
+        print("pausing is not supported in HelloVideoPlayer")
 
     def is_playing(self):
         """Return true if the video player is running, false otherwise."""
