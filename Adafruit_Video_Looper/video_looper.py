@@ -17,7 +17,6 @@ from datetime import datetime
 from .alsa_config import parse_hw_device
 from .model import Playlist, Movie
 from .playlist_builders import build_playlist_m3u
-from datetime import datetime
 
 # Basic video looper architecure:
 #
@@ -65,7 +64,8 @@ class VideoLooper:
         self._wait_time = self._config.getint('video_looper', 'wait_time')
         # Get timedisplay settings
         self._datetime_display = self._config.getboolean('video_looper', 'datetime_display')
-        self._datetime_display_format = self._config.get('video_looper', 'datetime_display_format', raw=True)
+        self._top_datetime_display_format = self._config.get('video_looper', 'top_datetime_display_format', raw=True)
+        self._bottom_datetime_display_format = self._config.get('video_looper', 'bottom_datetime_display_format', raw=True)
         # Parse string of 3 comma separated values like "255, 255, 255" into
         # list of ints for colors.
         self._bgcolor = list(map(int, self._config.get('video_looper', 'bgcolor')
@@ -300,7 +300,7 @@ class VideoLooper:
             time.sleep(1)
 
     def _display_datetime(self):
-        # This handles the array and decides on the correct suffix
+        # returns suffix based on the day
         def get_day_suffix(day):
             if day in [1, 21, 31]:
                 suffix = "st"
@@ -318,31 +318,32 @@ class VideoLooper:
             now = datetime.now()
 
             # Get the day suffix
-            day = int(now.strftime('%d'))
-            suffix = get_day_suffix(day)
+            suffix = get_day_suffix(int(now.strftime('%d')))
 
             # Format the time and date strings
-            time_format, date_format = self._datetime_display_format.split(',')
-            time_str = now.strftime(time_format)
-            date_str = now.strftime(date_format.replace('%d{SUFFIX}', f'%d{suffix}'))
+            top_format = self._top_datetime_display_format.replace('%d{SUFFIX}', f'%d{suffix}')
+            bottom_format = self._bottom_datetime_display_format.replace('%d{SUFFIX}', f'%d{suffix}')
+
+            top_str = now.strftime(top_format)
+            bottom_str = now.strftime(bottom_format)
 
             # Render the time and date labels
-            timeLabel = self._render_text(time_str, self._big_font)
-            dateLabel = self._render_text(date_str, self._medium_font)
+            top_label = self._render_text(top_str, self._big_font)
+            bottom_label = self._render_text(bottom_str, self._medium_font)
 
             # Calculate the label positions
-            l1w, l1h = timeLabel.get_size()
-            l2w, l2h = dateLabel.get_size()
+            l1w, l1h = top_label.get_size()
+            l2w, l2h = bottom_label.get_size()
 
-            time_x = sw // 2 - l1w // 2
-            time_y = sh // 2 - (l1h + l2h) // 2
-            date_x = sw // 2 - l2w // 2
-            date_y = time_y + l1h + 50
+            top_x = sw // 2 - l1w // 2
+            top_y = sh // 2 - (l1h + l2h) // 2
+            bottom_x = sw // 2 - l2w // 2
+            bottom_y = top_y + l1h + 50
 
             # Draw the labels to the screen
             self._screen.fill(self._bgcolor)
-            self._screen.blit(timeLabel, (time_x, time_y))
-            self._screen.blit(dateLabel, (date_x, date_y))
+            self._screen.blit(top_label, (top_x, top_y))
+            self._screen.blit(bottom_label, (bottom_x, bottom_y))
             pygame.display.update()
 
             time.sleep(1)
