@@ -141,6 +141,7 @@ The following keyboard commands are active by default (can be disabled in the [v
 * "b" - Back - stops the playback of current file and plays previous file
 * "s" - Stop/Start - stops or starts playback of current file
 * "p" - Power off - stop playback and shutdown RPi
+* " " - (space bar) - Pause/Resume the omxplayer video
 
 #### troubleshooting:
 * nothing happening (screen flashes once) when in copymode and new drive is plugged in?

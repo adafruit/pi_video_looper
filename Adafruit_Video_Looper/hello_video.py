@@ -42,6 +42,9 @@ class HelloVideoPlayer:
         self._process = subprocess.Popen(args,
                                          stdout=open(os.devnull, 'wb'),
                                          close_fds=True)
+    def pause(self):
+        #todo add pause to HelloVideoPlayer
+        print("Pause not supported in HelloVideoPlayer")
 
     def is_playing(self):
         """Return true if the video player is running, false otherwise."""
