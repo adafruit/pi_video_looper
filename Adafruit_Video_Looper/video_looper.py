@@ -17,7 +17,6 @@ from datetime import datetime
 from .alsa_config import parse_hw_device
 from .model import Playlist, Movie
 from .playlist_builders import build_playlist_m3u
-from datetime import datetime
 
 # Basic video looper architecure:
 #
@@ -65,7 +64,8 @@ class VideoLooper:
         self._wait_time = self._config.getint('video_looper', 'wait_time')
         # Get timedisplay settings
         self._datetime_display = self._config.getboolean('video_looper', 'datetime_display')
-        self._datetime_display_format = self._config.get('video_looper', 'datetime_display_format', raw=True)
+        self._top_datetime_display_format = self._config.get('video_looper', 'top_datetime_display_format', raw=True)
+        self._bottom_datetime_display_format = self._config.get('video_looper', 'bottom_datetime_display_format', raw=True)
         # Parse string of 3 comma separated values like "255, 255, 255" into
         # list of ints for colors.
         self._bgcolor = list(map(int, self._config.get('video_looper', 'bgcolor')
@@ -99,6 +99,7 @@ class VideoLooper:
         # Set other static internal state.
         self._extensions = '|'.join(self._player.supported_extensions())
         self._small_font = pygame.font.Font(None, 50)
+        self._medium_font   = pygame.font.Font(None, 96)
         self._big_font   = pygame.font.Font(None, 250)
         self._running    = True
         self._playbackStopped = False
@@ -299,14 +300,52 @@ class VideoLooper:
             time.sleep(1)
 
     def _display_datetime(self):
+        # returns suffix based on the day
+        def get_day_suffix(day):
+            if day in [1, 21, 31]:
+                suffix = "st"
+            elif day in [2, 22]:
+                suffix = "nd"
+            elif day in [3, 23]:
+                suffix = "rd"
+            else:
+                suffix = "th"
+            return suffix
+
         sw, sh = self._screen.get_size()
+
         for i in range(self._wait_time):
             now = datetime.now()
-            timeLabel = self._render_text(now.strftime(self._datetime_display_format), self._big_font)
-            lw, lh = timeLabel.get_size()
+
+            # Get the day suffix
+            suffix = get_day_suffix(int(now.strftime('%d')))
+
+            # Format the time and date strings
+            top_format = self._top_datetime_display_format.replace('%d{SUFFIX}', f'%d{suffix}')
+            bottom_format = self._bottom_datetime_display_format.replace('%d{SUFFIX}', f'%d{suffix}')
+
+            top_str = now.strftime(top_format)
+            bottom_str = now.strftime(bottom_format)
+
+            # Render the time and date labels
+            top_label = self._render_text(top_str, self._big_font)
+            bottom_label = self._render_text(bottom_str, self._medium_font)
+
+            # Calculate the label positions
+            l1w, l1h = top_label.get_size()
+            l2w, l2h = bottom_label.get_size()
+
+            top_x = sw // 2 - l1w // 2
+            top_y = sh // 2 - (l1h + l2h) // 2
+            bottom_x = sw // 2 - l2w // 2
+            bottom_y = top_y + l1h + 50
+
+            # Draw the labels to the screen
             self._screen.fill(self._bgcolor)
-            self._screen.blit(timeLabel, (round(sw/2-lw/2), round(sh/2-lh/2)))
+            self._screen.blit(top_label, (top_x, top_y))
+            self._screen.blit(bottom_label, (bottom_x, bottom_y))
             pygame.display.update()
+
             time.sleep(1)
 
     def _idle_message(self):
@@ -389,6 +428,10 @@ class VideoLooper:
                         self._print("s was pressed. stopping...")
                         self._playbackStopped = True
                         self._player.stop(3)
+                # space is pause/resume the playing video
+                if event.key == pygame.K_SPACE:
+                    self._print("Pause/Resume pressed")
+                    self._player.pause()
                 if event.key == pygame.K_p:
                     self._print("p was pressed. shutting down...")
                     self.quit(True)
