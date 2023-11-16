@@ -58,7 +58,7 @@ class VideoLooper:
         self._osd = self._config.getboolean('video_looper', 'osd')
         self._is_random = self._config.getboolean('video_looper', 'is_random')
         self._resume_playlist = self._config.getboolean('video_looper', 'resume_playlist')
-        self._keyboard_control = self._config.getboolean('video_looper', 'keyboard_control')
+        self._keyboard_control = self._config.getboolean('control', 'keyboard_control')
         self._copyloader = self._config.getboolean('copymode', 'copyloader')
         # Get seconds for countdown from config
         self._countdown_time = self._config.getint('video_looper', 'countdown_time')
@@ -114,14 +114,14 @@ class VideoLooper:
             self._keyboard_thread = threading.Thread(target=self._handle_keyboard_shortcuts, daemon=True)
             self._keyboard_thread.start()
         
-        pinMapSetting = self._config.get('control', 'pin_map', raw=True)
+        pinMapSetting = self._config.get('control', 'gpio_pin_map', raw=True)
         if pinMapSetting:
             try:
                 self._pinMap = json.loads("{"+pinMapSetting+"}")
                 self._gpio_setup()
             except Exception as err:
                 self._pinMap = None
-                self._print("pin_map setting is not valid and/or error with GPIO setup")
+                self._print("gpio_pin_map setting is not valid and/or error with GPIO setup")
         else:
             self._pinMap = None
 
@@ -544,7 +544,7 @@ class VideoLooper:
     def quit(self, shutdown=False):
         """Shut down the program"""
         self._print("quitting Video Looper")
-        
+
         self._playbackStopped = True
         self._running = False
         pygame.event.post(pygame.event.Event(pygame.QUIT))

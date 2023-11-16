@@ -6,13 +6,17 @@ Works right out of the box, but also has a lot of customisation options to make 
 
 If you miss a feature just post an issue here on Github. (https://github.com/adafruit/pi_video_looper)
 
-Currently only the __Legacy__ version of Raspberry Pi OS Lite is supported.
-You can download it from here: <https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-legacy>
+Currently only the __Legacy__ version of Raspberry Pi OS Lite is supported.  
+The last working image is this one:
+<https://downloads.raspberrypi.com/raspios_oldstable_lite_armhf/images/raspios_oldstable_lite_armhf-2022-01-28/2022-01-28-raspios-buster-armhf-lite.zip>
 
 For a detailed tutorial visit: <https://learn.adafruit.com/raspberry-pi-video-looper/installation>  
 There are also pre-compiled images available from <https://videolooper.de> (but they might not always contain the latest version of pi_video_looper)
 
 ## Changelog
+#### new in v1.0.14
+ - control the video looper via RPI GPIO pins (see section "control" below)
+
 #### new in v1.0.13
  - Additional date/time functionality added. 
    Allows you to add a second smaller line to display things like the date correctly.
@@ -139,6 +143,10 @@ Note: files with the same name always get overwritten.
 
 * to reduce the wear of the SD card and potentially extend the lifespan of the player, you could enable the overlay filesystem via `raspi-config` and select Performance Options->Overlay Filesystem
 
+#### Control
+The video looper can be controlled via keyboard input or via configured GPIO pins. 
+keyboard control is enabled by default via the ini setting `keyboard_control`
+
 #### keyboard commands:
 The following keyboard commands are active by default (can be disabled in the [video_looper.ini](https://github.com/adafruit/pi_video_looper/blob/master/assets/video_looper.ini)):
 * "ESC" - stops playback and exits video_looper
@@ -147,6 +155,23 @@ The following keyboard commands are active by default (can be disabled in the [v
 * "s" - Stop/Start - stops or starts playback of current file
 * "p" - Power off - stop playback and shutdown RPi
 * " " - (space bar) - Pause/Resume the omxplayer and imageplayer
+
+#### GPIO control:
+To enable GPIO control you need to set a GPIO pin mapping via the `gpio_pin_map` in the `control` section of the video_looper.ini. 
+Pins numbers are in "BOARD" numbering - see: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html  
+the pin mapping has the form: "pinnumber" : "action"  
+action can be one of the following:
+* a filename as a string to play 
+* an absoulte index number (starting with 0) 
+* a string in the form of `+X` or `-X` (with X being an integer) for a relative jump
+
+Here are some examples that can be set: 
+* `"11" : 1`  -> pin 11 will start the second file in the playlist
+* `"13" : "-2"` -> pin 13 will jump back two files
+* `"15" : "video.mp4"` -> pin 15 will start the file "video.mp4" (if it exists)
+* `"16" : "+1"` -> pin 16 will start next file
+
+Note: to be used as an absolute index the action needs to be an integer not a string
 
 #### troubleshooting:
 * nothing happening (screen flashes once) when in copymode and new drive is plugged in?
