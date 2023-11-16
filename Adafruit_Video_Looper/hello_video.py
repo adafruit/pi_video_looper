@@ -37,7 +37,7 @@ class HelloVideoPlayer:
             args.append('--loop={0}'.format(loop))
         #loop=0 means no loop
 
-        args.append(movie.filename)       # Add movie file path.
+        args.append(movie.target)       # Add movie file path.
         # Run hello_video process and direct standard output to /dev/null.
         self._process = subprocess.Popen(args,
                                          stdout=open(os.devnull, 'wb'),
