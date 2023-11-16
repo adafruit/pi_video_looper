@@ -57,6 +57,7 @@ class VideoLooper:
         # Load other configuration values.
         self._osd = self._config.getboolean('video_looper', 'osd')
         self._is_random = self._config.getboolean('video_looper', 'is_random')
+        self._one_shot_playback = self._config.getboolean('video_looper', 'one_shot_playback')
         self._resume_playlist = self._config.getboolean('video_looper', 'resume_playlist')
         self._keyboard_control = self._config.getboolean('control', 'keyboard_control')
         self._copyloader = self._config.getboolean('copymode', 'copyloader')
@@ -435,6 +436,7 @@ class VideoLooper:
                     self._print("k was pressed. skipping...")
                     self._playlist.seek(1)
                     self._player.stop(3)
+                    self._playbackStopped = False
                 if event.key == pygame.K_s:
                     if self._playbackStopped:
                         self._print("s was pressed. starting...")
@@ -454,6 +456,7 @@ class VideoLooper:
                     self._print("b was pressed. jumping back...")
                     self._playlist.seek(-1)
                     self._player.stop(3)
+                    self._playbackStopped = False
     
     def _handle_gpio_control(self, pin):
         if self._pinMap == None:
@@ -462,6 +465,7 @@ class VideoLooper:
         self._print("pin {} triggered: {}".format(pin, action))
         self._playlist.set_next(action)
         self._player.stop(3)
+        self._playbackStopped = False
     
     def _gpio_setup(self):
         if self._pinMap == None:
@@ -510,6 +514,9 @@ class VideoLooper:
                         infotext = '{0}/{1}'.format(movie.playcount, movie.repeats)
                     if self._playlist.length()==1:
                         infotext = '(endless loop)'
+
+                    if self._one_shot_playback:
+                        self._playbackStopped = True
 
                     # Start playing the first available movie.
                     self._print('Playing movie: {0} {1}'.format(movie, infotext))
