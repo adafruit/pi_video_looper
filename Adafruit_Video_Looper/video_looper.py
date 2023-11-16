@@ -328,38 +328,40 @@ class VideoLooper:
         sw, sh = self._screen.get_size()
 
         for i in range(self._wait_time):
-            now = datetime.now()
+            if self._running:
+                now = datetime.now()
 
-            # Get the day suffix
-            suffix = get_day_suffix(int(now.strftime('%d')))
+                # Get the day suffix
+                suffix = get_day_suffix(int(now.strftime('%d')))
 
-            # Format the time and date strings
-            top_format = self._top_datetime_display_format.replace('%d{SUFFIX}', f'%d{suffix}')
-            bottom_format = self._bottom_datetime_display_format.replace('%d{SUFFIX}', f'%d{suffix}')
+                # Format the time and date strings
+                top_format = self._top_datetime_display_format.replace('%d{SUFFIX}', f'%d{suffix}')
+                bottom_format = self._bottom_datetime_display_format.replace('%d{SUFFIX}', f'%d{suffix}')
 
-            top_str = now.strftime(top_format)
-            bottom_str = now.strftime(bottom_format)
+                top_str = now.strftime(top_format)
+                bottom_str = now.strftime(bottom_format)
 
-            # Render the time and date labels
-            top_label = self._render_text(top_str, self._big_font)
-            bottom_label = self._render_text(bottom_str, self._medium_font)
+                # Render the time and date labels
+                top_label = self._render_text(top_str, self._big_font)
+                bottom_label = self._render_text(bottom_str, self._medium_font)
 
-            # Calculate the label positions
-            l1w, l1h = top_label.get_size()
-            l2w, l2h = bottom_label.get_size()
+                # Calculate the label positions
+                l1w, l1h = top_label.get_size()
+                l2w, l2h = bottom_label.get_size()
 
-            top_x = sw // 2 - l1w // 2
-            top_y = sh // 2 - (l1h + l2h) // 2
-            bottom_x = sw // 2 - l2w // 2
-            bottom_y = top_y + l1h + 50
+                top_x = sw // 2 - l1w // 2
+                top_y = sh // 2 - (l1h + l2h) // 2
+                bottom_x = sw // 2 - l2w // 2
+                bottom_y = top_y + l1h + 50
 
-            # Draw the labels to the screen
-            self._screen.fill(self._bgcolor)
-            self._screen.blit(top_label, (top_x, top_y))
-            self._screen.blit(bottom_label, (bottom_x, bottom_y))
-            pygame.display.update()
+                # Draw the labels to the screen
 
-            time.sleep(1)
+                self._screen.fill(self._bgcolor)
+                self._screen.blit(top_label, (top_x, top_y))
+                self._screen.blit(bottom_label, (bottom_x, bottom_y))
+                pygame.display.update()
+
+                time.sleep(1)
 
     def _idle_message(self):
         """Print idle message from file reader."""
@@ -460,7 +462,6 @@ class VideoLooper:
         self._print("pin {} triggered: {}".format(pin, action))
         self._playlist.set_next(action)
         self._player.stop(3)
-        pass
     
     def _gpio_setup(self):
         if self._pinMap == None:
@@ -537,19 +538,24 @@ class VideoLooper:
                         
             time.sleep(0.002)
 
+        self._print("run ended")
+        pygame.quit()
+
     def quit(self, shutdown=False):
         """Shut down the program"""
         self._print("quitting Video Looper")
+        
         self._playbackStopped = True
+        self._running = False
+        pygame.event.post(pygame.event.Event(pygame.QUIT))
+
         if self._player is not None:
             self._player.stop()
         if self._pinMap:
             GPIO.cleanup()
-        self._running = False
-        pygame.quit()
+
         if shutdown:
             os.system("sudo shutdown now")
-
 
 
     def signal_quit(self, signal, frame):
