@@ -71,7 +71,7 @@ class OMXPlayer:
                 f.write(self._subtitle_header)
                 f.write(movie.title)
             args.extend(['--subtitles', srt_path])
-        args.append(movie.filename)       # Add movie file path.
+        args.append(movie.target)       # Add movie file path.
         # Run omxplayer process and direct standard output to /dev/null.
         # Establish input pipe for commands
         self._process = subprocess.Popen(args,

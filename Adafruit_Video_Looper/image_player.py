@@ -41,7 +41,7 @@ class ImagePlayer:
         if self._loop == 0:
             self._loop = 1
         
-        imagepath = image.filename
+        imagepath = image.target
 
         if imagepath != "" and os.path.isfile(imagepath):
             self._blank_screen(False)

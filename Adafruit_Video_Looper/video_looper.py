@@ -11,8 +11,10 @@ import sys
 import signal
 import time
 import pygame
+import json
 import threading
 from datetime import datetime
+import RPi.GPIO as GPIO
 
 from .alsa_config import parse_hw_device
 from .model import Playlist, Movie
@@ -111,6 +113,17 @@ class VideoLooper:
         if self._keyboard_control:
             self._keyboard_thread = threading.Thread(target=self._handle_keyboard_shortcuts, daemon=True)
             self._keyboard_thread.start()
+        
+        pinMapSetting = self._config.get('control', 'pin_map', raw=True)
+        if pinMapSetting:
+            try:
+                self._pinMap = json.loads("{"+pinMapSetting+"}")
+                self._gpio_setup()
+            except Exception as err:
+                self._pinMap = None
+                self._print("pin_map setting is not valid and/or error with GPIO setup")
+        else:
+            self._pinMap = None
 
     def _print(self, message):
         """Print message to standard output if console output is enabled."""
@@ -439,10 +452,26 @@ class VideoLooper:
                     self._print("b was pressed. jumping back...")
                     self._playlist.seek(-1)
                     self._player.stop(3)
-                    
-                    
+    
+    def _handle_gpio_control(self, pin):
+        if self._pinMap == None:
+            return
+        action = self._pinMap[str(pin)]
+        self._print("pin {} triggered: {}".format(pin, action))
+        self._playlist.set_next(action)
+        self._player.stop(3)
+        pass
+    
+    def _gpio_setup(self):
+        if self._pinMap == None:
+            return
+        GPIO.setmode(GPIO.BOARD)
+        for pin in self._pinMap:
+            GPIO.setup(int(pin), GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            GPIO.add_event_detect(int(pin), GPIO.FALLING, callback=self._handle_gpio_control,  bouncetime=200) 
+            self._print("pin {} action set to: {}".format(pin, self._pinMap[pin]))
 
-
+        
     def run(self):
         """Main program loop.  Will never return!"""
         # Get playlist of movies to play from file reader.
@@ -514,10 +543,12 @@ class VideoLooper:
         self._playbackStopped = True
         if self._player is not None:
             self._player.stop()
+        if self._pinMap:
+            GPIO.cleanup()
+        self._running = False
         pygame.quit()
         if shutdown:
             os.system("sudo shutdown now")
-        self._running = False
 
 
 
