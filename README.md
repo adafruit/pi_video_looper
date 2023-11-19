@@ -14,6 +14,10 @@ For a detailed tutorial visit: <https://learn.adafruit.com/raspberry-pi-video-lo
 There are also pre-compiled images available from <https://videolooper.de> (but they might not always contain the latest version of pi_video_looper)
 
 ## Changelog
+#### new in v1.0.16
+ - send previous/next chapter commands to omxplayer (o/i on keyboard)
+ - 
+
 #### new in v1.0.15
  - one shot playback: option to enable stopping playback after each file (usefull in combination with gpio triggers)
 

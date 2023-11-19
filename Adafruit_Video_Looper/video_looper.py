@@ -457,6 +457,12 @@ class VideoLooper:
                     self._playlist.seek(-1)
                     self._player.stop(3)
                     self._playbackStopped = False
+                if event.key == pygame.K_o:
+                    self._print("o was pressed. next chapter...")
+                    self._player.send_key("o")
+                if event.key == pygame.K_i:
+                    self._print("i was pressed. previous chapter...")
+                    self._player.send_key("i")
     
     def _handle_gpio_control(self, pin):
         if self._pinMap == None:
