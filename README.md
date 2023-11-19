@@ -146,6 +146,24 @@ Note: files with the same name always get overwritten.
 
 * to reduce the wear of the SD card and potentially extend the lifespan of the player, you could enable the overlay filesystem via `raspi-config` and select Performance Options->Overlay Filesystem
 
+#### Raspberry Pi 4/5 multi screen output
+this section addresses mutli output for Raspberry Pis that have more than one HDMI output.  
+By default both HDMI outputs should display the same image. It's possible to have two loopers run independend of each other and output to invidiual HDMI outputs.  
+
+the following commands assume that you have already installed the video looper with the install script.
+
+```
+sudo cp /boot/video_looper.ini /boot/video_looper2.ini
+sudo cp /etc/supervisor/conf.d/video_looper.conf /etc/supervisor/conf.d/video_looper2.conf
+sudo sed -i "s/extra_args = /extra_args = --display 2 /g" /boot/video_looper.ini
+sudo sed -i "s/extra_args = /extra_args = --display 7 /g" /boot/video_looper2.ini
+sudo sed -i "s/program:video_looper/program:video_looper2/g" /etc/supervisor/conf.d/video_looper2.conf
+sudo sed -i "s/Adafruit_Video_Looper.video_looper/Adafruit_Video_Looper.video_looper \/boot\/video_looper2.ini/g" /etc/supervisor/conf.d/video_looper2.conf
+sudo service supervisor restart
+```
+
+now both HDMI outputs should run a looper independend of each other - you can modify the settings by editing `/boot/video_looper.ini` and `/boot/video_looper2.ini`. Initially they will both have identical settings except for "extra_args". Please note: having keyboard or GPIO control enabled may cause unexpected results (or it the looper might not run at all)
+
 ### Control
 The video looper can be controlled via keyboard input or via configured GPIO pins. 
 keyboard control is enabled by default via the ini setting `keyboard_control`
