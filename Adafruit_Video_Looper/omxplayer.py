@@ -83,6 +83,11 @@ class OMXPlayer:
         if self.is_playing():
             self._process.stdin.write('p'.encode())
             self._process.stdin.flush()
+    
+    def sendKey(self, key: str):
+        if self.is_playing():
+            self._process.stdin.write(key.encode())
+            self._process.stdin.flush()
 
     def is_playing(self):
         """Return true if the video player is running, false otherwise."""

@@ -45,6 +45,9 @@ class HelloVideoPlayer:
     def pause(self):
         #todo add pause to HelloVideoPlayer
         print("pausing is not supported in HelloVideoPlayer")
+    
+    def sendKey(self, key: str):
+        print("sendKey not available for hello_video")
 
     def is_playing(self):
         """Return true if the video player is running, false otherwise."""

@@ -81,6 +81,9 @@ class ImagePlayer:
 
     def pause(self):
         self._isPaused = not self._isPaused
+    
+    def sendKey(self, key: str):
+        print("sendKey not available for image_player")
 
     def is_playing(self):
         """Here we need to compare for how long the image was displayed"""
