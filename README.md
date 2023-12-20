@@ -114,12 +114,26 @@ There are also pre-compiled images available from <https://videolooper.de> (but 
     
 ## How to install
 `sudo apt-get install git`  
+`cd ~`  
 `git clone https://github.com/adafruit/pi_video_looper`  
 `cd pi_video_looper`  
 `sudo ./install.sh`
 
 Default player is omxplayer. Use the `no_hello_video` flag to install without the hello_video player (a lot faster to install):  
 `sudo ./install.sh no_hello_video`
+
+## How to update
+An update is always like a fresh installation so you will loose custom changes made to the /boot/video_looper.ini   
+
+For backing up the current ini:     
+`sudo cp /boot/video_looper.ini /boot/video_looper.ini_backup`  
+
+For the update:    
+`cd ~`   
+`sudo rm -rf pi_video_looper`   
+`git clone https://github.com/adafruit/pi_video_looper`    
+`cd pi_video_looper`   
+`sudo ./install.sh` 
 
 ## Features and settings
 To change the settings of the video looper (e.g. random playback, copy mode, advanced features) edit the `/boot/video_looper.ini` file, i.e. by quitting the player with 'ESC' and logging in to the Raspberry with an attached keyboard, or remotely via ssh. Then edit the configuration file with `sudo nano /boot/video_looper.ini`.  
