@@ -467,11 +467,16 @@ class VideoLooper:
     def _handle_gpio_control(self, pin):
         if self._pinMap == None:
             return
+        
+        self._print(f'pin {pin} triggered: {action}')
+
         action = self._pinMap[str(pin)]
-        self._print("pin {} triggered: {}".format(pin, action))
-        self._playlist.set_next(action)
-        self._player.stop(3)
-        self._playbackStopped = False
+        if action in ['K_ESCAPE', 'K_k', 'K_s', 'K_SPACE', 'K_p', 'K_b', 'K_o', 'K_i']:
+            pygame.event.post(pygame.event.Event(pygame.KEYDOWN, key=getattr(pygame, action, None)))
+        else:
+            self._playlist.set_next(action)
+            self._player.stop(3)
+            self._playbackStopped = False
     
     def _gpio_setup(self):
         if self._pinMap == None:
