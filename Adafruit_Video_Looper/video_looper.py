@@ -468,9 +468,10 @@ class VideoLooper:
         if self._pinMap == None:
             return
         
-        self._print(f'pin {pin} triggered: {action}')
-
         action = self._pinMap[str(pin)]
+
+        self._print(f'pin {pin} triggered: {action}')
+        
         if action in ['K_ESCAPE', 'K_k', 'K_s', 'K_SPACE', 'K_p', 'K_b', 'K_o', 'K_i']:
             pygame.event.post(pygame.event.Event(pygame.KEYDOWN, key=getattr(pygame, action, None)))
         else:
