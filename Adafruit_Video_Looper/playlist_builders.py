@@ -15,7 +15,7 @@ def build_playlist_m3u(playlist_path: str):
         for line in f:
             if line.startswith('#'):
                 if line.startswith('#EXTINF'):
-                    matches = re.match(r'^#\w+:\d+(?:\s*\w+\=\".*\")*,(.*)$', line)
+                    matches = re.match(r"^#\w+:\d+(?:\s*\w+\=\".*\")*,(.*)$", line)
                     if matches:
                         title = matches[1]
             else:
