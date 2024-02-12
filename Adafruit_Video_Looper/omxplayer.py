@@ -80,9 +80,7 @@ class OMXPlayer:
                                          close_fds=True)
 
     def pause(self):
-        if self.is_playing():
-            self._process.stdin.write('p'.encode())
-            self._process.stdin.flush()
+        self.sendKey("p")
     
     def sendKey(self, key: str):
         if self.is_playing():
