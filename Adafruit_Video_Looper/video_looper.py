@@ -564,17 +564,18 @@ class VideoLooper:
         """Shut down the program"""
         self._print("quitting Video Looper")
 
+        if shutdown:
+            os.system("sudo shutdown now")
+
         self._playbackStopped = True
         self._running = False
         pygame.event.post(pygame.event.Event(pygame.QUIT))
 
         if self._player is not None:
             self._player.stop()
+
         if self._pinMap:
             GPIO.cleanup()
-
-        if shutdown:
-            os.system("sudo shutdown now")
 
 
     def signal_quit(self, signal, frame):
