@@ -11,13 +11,14 @@ import sys
 import signal
 import time
 import pygame
+import json
 import threading
 from datetime import datetime
+import RPi.GPIO as GPIO
 
 from .alsa_config import parse_hw_device
 from .model import Playlist, Movie
 from .playlist_builders import build_playlist_m3u
-
 
 # Basic video looper architecure:
 #
@@ -56,13 +57,18 @@ class VideoLooper:
         # Load other configuration values.
         self._osd = self._config.getboolean('video_looper', 'osd')
         self._is_random = self._config.getboolean('video_looper', 'is_random')
-        self._resume_playlist = self._config.getboolean('video_looper', 'resume_playlist') 
-        self._keyboard_control = self._config.getboolean('video_looper', 'keyboard_control')
+        self._one_shot_playback = self._config.getboolean('video_looper', 'one_shot_playback')
+        self._resume_playlist = self._config.getboolean('video_looper', 'resume_playlist')
+        self._keyboard_control = self._config.getboolean('control', 'keyboard_control')
         self._copyloader = self._config.getboolean('copymode', 'copyloader')
         # Get seconds for countdown from config
         self._countdown_time = self._config.getint('video_looper', 'countdown_time')
         # Get seconds for waittime bewteen files from config
         self._wait_time = self._config.getint('video_looper', 'wait_time')
+        # Get timedisplay settings
+        self._datetime_display = self._config.getboolean('video_looper', 'datetime_display')
+        self._top_datetime_display_format = self._config.get('video_looper', 'top_datetime_display_format', raw=True)
+        self._bottom_datetime_display_format = self._config.get('video_looper', 'bottom_datetime_display_format', raw=True)
         # Parse string of 3 comma separated values like "255, 255, 255" into
         # list of ints for colors.
         self._bgcolor = list(map(int, self._config.get('video_looper', 'bgcolor')
@@ -88,6 +94,7 @@ class VideoLooper:
         # Load configured video player and file reader modules.
         self._player = self._load_player()
         self._reader = self._load_file_reader()
+        self._playlist = None
         # Load ALSA hardware configuration.
         self._alsa_hw_device = parse_hw_device(self._config.get('alsa', 'hw_device'))
         self._alsa_hw_vol_control = self._config.get('alsa', 'hw_vol_control')
@@ -101,6 +108,7 @@ class VideoLooper:
         # Set other static internal state.
         self._extensions = '|'.join(self._player.supported_extensions())
         self._small_font = pygame.font.Font(None, 50)
+        self._medium_font   = pygame.font.Font(None, 96)
         self._big_font   = pygame.font.Font(None, 250)
         self._running    = True
         self._playbackStopped = False
@@ -112,6 +120,17 @@ class VideoLooper:
         if self._keyboard_control:
             self._keyboard_thread = threading.Thread(target=self._handle_keyboard_shortcuts, daemon=True)
             self._keyboard_thread.start()
+        
+        pinMapSetting = self._config.get('control', 'gpio_pin_map', raw=True)
+        if pinMapSetting:
+            try:
+                self._pinMap = json.loads("{"+pinMapSetting+"}")
+                self._gpio_setup()
+            except Exception as err:
+                self._pinMap = None
+                self._print("gpio_pin_map setting is not valid and/or error with GPIO setup")
+        else:
+            self._pinMap = None
 
     def _print(self, message):
         """Print message to standard output if console output is enabled."""
@@ -300,6 +319,57 @@ class VideoLooper:
             # Pause for a second between each frame.
             time.sleep(1)
 
+    def _display_datetime(self):
+        # returns suffix based on the day
+        def get_day_suffix(day):
+            if day in [1, 21, 31]:
+                suffix = "st"
+            elif day in [2, 22]:
+                suffix = "nd"
+            elif day in [3, 23]:
+                suffix = "rd"
+            else:
+                suffix = "th"
+            return suffix
+
+        sw, sh = self._screen.get_size()
+
+        for i in range(self._wait_time):
+            if self._running:
+                now = datetime.now()
+
+                # Get the day suffix
+                suffix = get_day_suffix(int(now.strftime('%d')))
+
+                # Format the time and date strings
+                top_format = self._top_datetime_display_format.replace('%d{SUFFIX}', f'%d{suffix}')
+                bottom_format = self._bottom_datetime_display_format.replace('%d{SUFFIX}', f'%d{suffix}')
+
+                top_str = now.strftime(top_format)
+                bottom_str = now.strftime(bottom_format)
+
+                # Render the time and date labels
+                top_label = self._render_text(top_str, self._big_font)
+                bottom_label = self._render_text(bottom_str, self._medium_font)
+
+                # Calculate the label positions
+                l1w, l1h = top_label.get_size()
+                l2w, l2h = bottom_label.get_size()
+
+                top_x = sw // 2 - l1w // 2
+                top_y = sh // 2 - (l1h + l2h) // 2
+                bottom_x = sw // 2 - l2w // 2
+                bottom_y = top_y + l1h + 50
+
+                # Draw the labels to the screen
+
+                self._screen.fill(self._bgcolor)
+                self._screen.blit(top_label, (top_x, top_y))
+                self._screen.blit(bottom_label, (bottom_x, bottom_y))
+                pygame.display.update()
+
+                time.sleep(1)
+
     def _idle_message(self):
         """Print idle message from file reader."""
         # Print message to console.
@@ -370,7 +440,9 @@ class VideoLooper:
                     self.quit()
                 if event.key == pygame.K_k:
                     self._print("k was pressed. skipping...")
+                    self._playlist.seek(1)
                     self._player.stop(3)
+                    self._playbackStopped = False
                 if event.key == pygame.K_s:
                     if self._playbackStopped:
                         self._print("s was pressed. starting...")
@@ -379,19 +451,56 @@ class VideoLooper:
                         self._print("s was pressed. stopping...")
                         self._playbackStopped = True
                         self._player.stop(3)
+                # space is pause/resume the playing video
+                if event.key == pygame.K_SPACE:
+                    self._print("Pause/Resume pressed")
+                    self._player.pause()
                 if event.key == pygame.K_p:
                     self._print("p was pressed. shutting down...")
                     self.quit(True)
-                    
+                if event.key == pygame.K_b:
+                    self._print("b was pressed. jumping back...")
+                    self._playlist.seek(-1)
+                    self._player.stop(3)
+                    self._playbackStopped = False
+                if event.key == pygame.K_o:
+                    self._print("o was pressed. next chapter...")
+                    self._player.send_key("o")
+                if event.key == pygame.K_i:
+                    self._print("i was pressed. previous chapter...")
+                    self._player.send_key("i")
+    
+    def _handle_gpio_control(self, pin):
+        if self._pinMap == None:
+            return
+        
+        self._print(f'pin {pin} triggered: {action}')
 
+        action = self._pinMap[str(pin)]
+        if action in ['K_ESCAPE', 'K_k', 'K_s', 'K_SPACE', 'K_p', 'K_b', 'K_o', 'K_i']:
+            pygame.event.post(pygame.event.Event(pygame.KEYDOWN, key=getattr(pygame, action, None)))
+        else:
+            self._playlist.set_next(action)
+            self._player.stop(3)
+            self._playbackStopped = False
+    
+    def _gpio_setup(self):
+        if self._pinMap == None:
+            return
+        GPIO.setmode(GPIO.BOARD)
+        for pin in self._pinMap:
+            GPIO.setup(int(pin), GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            GPIO.add_event_detect(int(pin), GPIO.FALLING, callback=self._handle_gpio_control,  bouncetime=200) 
+            self._print("pin {} action set to: {}".format(pin, self._pinMap[pin]))
 
+        
     def run(self):
         """Main program loop.  Will never return!"""
         # Get playlist of movies to play from file reader.
-        playlist = self._build_playlist()
-        self._prepare_to_run_playlist(playlist)
+        self._playlist = self._build_playlist()
+        self._prepare_to_run_playlist(self._playlist)
         self._set_hardware_volume()
-        movie = playlist.get_next(self._is_random, self._resume_playlist)
+        movie = self._playlist.get_next(self._is_random, self._resume_playlist)
         # Main loop to play videos in the playlist and listen for file changes.
         while self._running:
             # Load and play a new movie if nothing is playing.
@@ -400,16 +509,19 @@ class VideoLooper:
 
                     if movie.playcount >= movie.repeats:
                         movie.clear_playcount()
-                        movie = playlist.get_next(self._is_random, self._resume_playlist)
+                        movie = self._playlist.get_next(self._is_random, self._resume_playlist)
                     elif self._player.can_loop_count() and movie.playcount > 0:
                         movie.clear_playcount()
-                        movie = playlist.get_next(self._is_random, self._resume_playlist)
+                        movie = self._playlist.get_next(self._is_random, self._resume_playlist)
 
                     movie.was_played()
 
                     if self._wait_time > 0 and not self._firstStart:
-                        self._print('Waiting for: {0} seconds'.format(self._wait_time))
-                        time.sleep(self._wait_time)
+                        if(self._datetime_display):
+                            self._display_datetime()
+                        else:
+                            self._print('Waiting for: {0} seconds'.format(self._wait_time))
+                            time.sleep(self._wait_time)
                     self._firstStart = False
 
                     #generating infotext
@@ -417,13 +529,16 @@ class VideoLooper:
                         infotext = '{0} time{1} (player counts loops)'.format(movie.repeats, "s" if movie.repeats>1 else "")
                     else:
                         infotext = '{0}/{1}'.format(movie.playcount, movie.repeats)
-                    if playlist.length()==1:
+                    if self._playlist.length()==1:
                         infotext = '(endless loop)'
+
+                    if self._one_shot_playback:
+                        self._playbackStopped = True
 
                     # Start playing the first available movie.
                     self._print('Playing movie: {0} {1}'.format(movie, infotext))
                     # todo: maybe clear screen to black so that background (image/color) is not visible for videos with a resolution that is < screen resolution
-                    self._player.play(movie, loop=-1 if playlist.length()==1 else None, vol = self._sound_vol)
+                    self._player.play(movie, loop=-1 if self._playlist.length()==1 else None, vol = self._sound_vol)
 
             # Check for changes in the file search path (like USB drives added)
             # and rebuild the playlist.
@@ -433,13 +548,13 @@ class VideoLooper:
                                       # player to stop.
                 self._print("player stopped")
                 # Rebuild playlist and show countdown again (if OSD enabled).
-                playlist = self._build_playlist()
+                self._playlist = self._build_playlist()
                 #refresh background image
                 if self._copyloader:
                     self._bgimage = self._load_bgimage()
-                self._prepare_to_run_playlist(playlist)
+                self._prepare_to_run_playlist(self._playlist)
                 self._set_hardware_volume()
-                movie = playlist.get_next(self._is_random, self._resume_playlist)
+                movie = self._playlist.get_next(self._is_random, self._resume_playlist)
 
             # Give the CPU some time to do other tasks. low values increase "responsiveness to changes" and reduce the pause between files
             # but increase CPU usage
@@ -447,17 +562,25 @@ class VideoLooper:
                         
             time.sleep(0.002)
 
+        self._print("run ended")
+        pygame.quit()
+
     def quit(self, shutdown=False):
         """Shut down the program"""
         self._print("quitting Video Looper")
+
         self._playbackStopped = True
+        self._running = False
+        pygame.event.post(pygame.event.Event(pygame.QUIT))
+
         if self._player is not None:
             self._player.stop()
-        pygame.quit()
+        if self._pinMap:
+            GPIO.cleanup()
+
         if shutdown:
             os.system("sudo shutdown now")
-        self._running = False
-        
+
     def signal_quit(self, signal, frame):
         """Shut down the program, meant to by called by signal handler."""
         self._print("received signal to quit")

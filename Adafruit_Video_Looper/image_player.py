@@ -13,6 +13,7 @@ class ImagePlayer:
         self._loop = 0
         self._startTime = 0
         self._bgimage = bgimage
+        self._isPaused = False
 
     def _load_config(self, config):
         self._extensions = config.get('image_player', 'extensions') \
@@ -40,7 +41,7 @@ class ImagePlayer:
         if self._loop == 0:
             self._loop = 1
         
-        imagepath = image.filename
+        imagepath = image.target
 
         if imagepath != "" and os.path.isfile(imagepath):
             self._blank_screen(False)
@@ -78,9 +79,15 @@ class ImagePlayer:
 
         self._startTime = monotonic()
 
+    def pause(self):
+        self._isPaused = not self._isPaused
+    
+    def sendKey(self, key: str):
+        print("sendKey not available for image_player")
+
     def is_playing(self):
-        """Here we need to compare for how long the image was displayed, also taking the in and set playing to false if time is up also"""
-        if self._loop <= -1: #loop one image = play forever
+        """Here we need to compare for how long the image was displayed"""
+        if self._loop <= -1 or self._isPaused: #loop one image = play forever
             return True
         
         playing = (monotonic() - self._startTime) < self._duration*self._loop

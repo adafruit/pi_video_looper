@@ -37,11 +37,17 @@ class HelloVideoPlayer:
             args.append('--loop={0}'.format(loop))
         #loop=0 means no loop
 
-        args.append(movie.filename)       # Add movie file path.
+        args.append(movie.target)       # Add movie file path.
         # Run hello_video process and direct standard output to /dev/null.
         self._process = subprocess.Popen(args,
                                          stdout=open(os.devnull, 'wb'),
                                          close_fds=True)
+    def pause(self):
+        #todo add pause to HelloVideoPlayer
+        print("pausing is not supported in HelloVideoPlayer")
+    
+    def sendKey(self, key: str):
+        print("sendKey not available for hello_video")
 
     def is_playing(self):
         """Return true if the video player is running, false otherwise."""

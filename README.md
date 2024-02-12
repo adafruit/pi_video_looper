@@ -6,13 +6,36 @@ Works right out of the box, but also has a lot of customisation options to make 
 
 If you miss a feature just post an issue here on Github. (https://github.com/adafruit/pi_video_looper)
 
-Currently only the __Legacy__ version of Raspberry Pi OS Lite is supported.
-You can download it from here: <https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-legacy>
+Currently only the __Legacy__ version of Raspberry Pi OS Lite is supported.  
+The last working image is this one:
+<https://downloads.raspberrypi.com/raspios_oldstable_lite_armhf/images/raspios_oldstable_lite_armhf-2022-01-28/2022-01-28-raspios-buster-armhf-lite.zip>
 
 For a detailed tutorial visit: <https://learn.adafruit.com/raspberry-pi-video-looper/installation>  
 There are also pre-compiled images available from <https://videolooper.de> (but they might not always contain the latest version of pi_video_looper)
 
 ## Changelog
+#### new in v1.0.17
+ - GPIO pins can now be used to send "keyboard commands"
+
+#### new in v1.0.16
+ - send previous/next chapter commands to omxplayer (o/i on keyboard)
+
+#### new in v1.0.15
+ - one shot playback: option to enable stopping playback after each file (usefull in combination with gpio triggers)
+
+#### new in v1.0.14
+ - control the video looper via RPI GPIO pins (see section "control" below)
+
+#### new in v1.0.13
+ - Additional date/time functionality added. 
+   Allows you to add a second smaller line to display things like the date correctly.
+ - pressing spacebar will pause/resume omxplayer and image_player
+ 
+#### new in v1.0.12
+ - date/time display option
+   allows you to display the current date and time between the videos
+ - added "back" keyboard shortcut to play previous file
+
 #### v1.0.11
  - fixed skip bug with image_player
  - fixed possible dependency issue
@@ -97,12 +120,26 @@ There are also pre-compiled images available from <https://videolooper.de> (but 
     
 ## How to install
 `sudo apt-get install git`  
+`cd ~`  
 `git clone https://github.com/adafruit/pi_video_looper`  
 `cd pi_video_looper`  
 `sudo ./install.sh`
 
-Default player is omxplayer. Use the `no_hello_video` flag to install without the hello_video player (a lot faster to install):  
+Default player is omxplayer. Use the `no_hello_video` flag to install without the hello_video player (a bit faster to install):  
 `sudo ./install.sh no_hello_video`
+
+## How to update
+An update is always like a fresh installation so you will loose custom changes made to the /boot/video_looper.ini   
+
+For backing up the current ini:     
+`sudo cp /boot/video_looper.ini /boot/video_looper.ini_backup`  
+
+For the update:    
+`cd ~`   
+`sudo rm -rf pi_video_looper`   
+`git clone https://github.com/adafruit/pi_video_looper`    
+`cd pi_video_looper`   
+`sudo ./install.sh` 
 
 ## Features and settings
 To change the settings of the video looper (e.g. random playback, copy mode, advanced features) edit the `/boot/video_looper.ini` file, i.e. by quitting the player with 'ESC' and logging in to the Raspberry with an attached keyboard, or remotely via ssh. Then edit the configuration file with `sudo nano /boot/video_looper.ini`.  
@@ -127,14 +164,63 @@ Note: files with the same name always get overwritten.
     
 * if you have only one video then omxplayer will also loop seamlessly (and with audio)
 
+* to reduce the wear of the SD card and potentially extend the lifespan of the player, you could enable the overlay filesystem via `raspi-config` and select Performance Options->Overlay Filesystem
+
+#### Raspberry Pi 4 multi screen output (untested!)
+this section addresses multi output for Raspberry Pis that have more than one HDMI output.  
+By default both HDMI outputs should display the same image. It's possible to have two loopers run independend of each other and output to invidiual HDMI outputs.  
+
+the following commands assume that you have already installed the video looper with the install script.
+
+```
+sudo cp /boot/video_looper.ini /boot/video_looper2.ini
+sudo cp /etc/supervisor/conf.d/video_looper.conf /etc/supervisor/conf.d/video_looper2.conf
+sudo sed -i "s/extra_args = /extra_args = --display 2 /g" /boot/video_looper.ini
+sudo sed -i "s/extra_args = /extra_args = --display 7 /g" /boot/video_looper2.ini
+sudo sed -i "s/program:video_looper/program:video_looper2/g" /etc/supervisor/conf.d/video_looper2.conf
+sudo sed -i "s/Adafruit_Video_Looper.video_looper/Adafruit_Video_Looper.video_looper \/boot\/video_looper2.ini/g" /etc/supervisor/conf.d/video_looper2.conf
+sudo service supervisor restart
+```
+
+now both HDMI outputs should run a looper independend of each other - you can modify the settings by editing `/boot/video_looper.ini` and `/boot/video_looper2.ini`. Initially they will both have identical settings except for "extra_args". Please note: having keyboard or GPIO control enabled may cause unexpected results (or it the looper might not run at all)
+
+### Control
+The video looper can be controlled via keyboard input or via configured GPIO pins. 
+keyboard control is enabled by default via the ini setting `keyboard_control`
+
 #### keyboard commands:
 The following keyboard commands are active by default (can be disabled in the [video_looper.ini](https://github.com/adafruit/pi_video_looper/blob/master/assets/video_looper.ini)):
 * "ESC" - stops playback and exits video_looper
 * "k" - sKip - stops the playback of current file and plays next file
+* "b" - Back - stops the playback of current file and plays previous file
 * "s" - Stop/Start - stops or starts playback of current file
 * "p" - Power off - stop playback and shutdown RPi
+* " " - (space bar) - Pause/Resume the omxplayer and imageplayer
+* "o" - next chapter (only omxplayer)
+* "i" - previous chapter (only omxplayer)
 
-#### troubleshooting:
+#### GPIO control:
+To enable GPIO control you need to set a GPIO pin mapping via the `gpio_pin_map` in the `control` section of the video_looper.ini. 
+Pins numbers are in "BOARD" numbering - see: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html  
+the pin mapping has the form: "pinnumber" : "action"  
+action can be one of the following:
+* a filename as a string to play 
+* an absoulte index number (starting with 0) 
+* a string in the form of `+X` or `-X` (with X being an integer) for a relative jump
+* a keyboard command (see above) in the form of a pygame key constant (see list: https://www.pygame.org/docs/ref/key.html)
+
+Here are some examples that can be set: 
+* `"11" : 1`  -> pin 11 will start the second file in the playlist
+* `"13" : "-2"` -> pin 13 will jump back two files
+* `"15" : "video.mp4"` -> pin 15 will start the file "video.mp4" (if it exists)
+* `"16" : "+1"` -> pin 16 will start next file
+* `"18" : "K_SPACE"` -> pin 18 will send space command (= pause)
+* `"21" : "K_p"` -> pin 21 will send "p" keyboard command (= shutdown)
+
+Note: to be used as an absolute index the action needs to be an integer not a string
+Note 2: "keyboard_control" needs to be enabled in the ini for gpio to utilise keyboard commands
+
+## Troubleshooting:
 * nothing happening (screen flashes once) when in copymode and new drive is plugged in?
     * check if you have the "password file" on your drive (see copymode explained above)
 * log output can be displayed with `journalctl -fu video_looper`. Enable detailed logging in the video_looper.ini with console_output = true.  

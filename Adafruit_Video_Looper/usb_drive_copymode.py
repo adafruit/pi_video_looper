@@ -62,8 +62,8 @@ class USBDriveReaderCopy(object):
                                  .translate(str.maketrans('','', ' \t\r\n.')) \
                                  .split(','))
 
-    def copy_files(self, paths):
-        self.clear_screen()
+    def _copy_files(self, paths):
+        self._clear_screen()
 
         copy_mode = self._copy_mode
         copy_mode_info = "(from config)"
@@ -89,7 +89,7 @@ class USBDriveReaderCopy(object):
                 copy_mode_info = "(from config)"
 
             #inform about copymode
-            self.draw_info_text("Mode: " + copy_mode + " " + copy_mode_info)
+            self._draw_info_text("Mode: " + copy_mode + " " + copy_mode_info)
 
             if copy_mode == "replace":
                 # iterate over target path for deleting:
@@ -101,18 +101,18 @@ class USBDriveReaderCopy(object):
             for x in os.listdir(path):
                 if x[0] is not '.' and re.search('\.({0})$'.format(self._extensions), x, flags=re.IGNORECASE):
                     #copy file
-                    self.copy_with_progress('{0}/{1}'.format(path.rstrip('/'), x), '{0}/{1}'.format(self._target_path.rstrip('/'), x))
+                    self._copy_with_progress('{0}/{1}'.format(path.rstrip('/'), x), '{0}/{1}'.format(self._target_path.rstrip('/'), x))
 
             #copy loader image
             if self._copyloader:
                 loader_file_path = '{0}/{1}'.format(path.rstrip('/'), 'loader.png')
                 if os.path.exists(loader_file_path):
-                    self.clear_screen()
-                    self.draw_info_text("Copying splashscreen file...")
+                    self._clear_screen()
+                    self._draw_info_text("Copying splashscreen file...")
                     time.sleep(2)
-                    self.copy_with_progress(loader_file_path,'/home/pi/loader.png')
+                    self._copy_with_progress(loader_file_path,'/home/pi/loader.png')
                     
-    def draw_copy_progress(self, copied, total):
+    def _draw_copy_progress(self, copied, total):
         perc = 100 * copied / total
         assert (isinstance(perc, float))
         assert (0. <= perc <= 100.)
@@ -132,7 +132,7 @@ class USBDriveReaderCopy(object):
 
         pygame.display.update(self.borderrect)
 
-    def draw_info_text(self, message):
+    def _draw_info_text(self, message):
         label1 = self._font.render(message, True, self._fontcolor, self._bgcolor)
         l1w, l1h = label1.get_size()
         self._screen.blit(label1, (self.screenwidth / 2 - l1w / 2, self.screenheight / 2 - l1h - self.pheight/2 - 3*self.borderthickness))
@@ -143,7 +143,7 @@ class USBDriveReaderCopy(object):
         l1w, l1h = label1.get_size()
         self._screen.blit(label1, (self.screenwidth / 2 - l1w / 2, self.screenheight / 2 - l1h / 2 + self.borderthickness))
 
-    def clear_screen(self, full=True):
+    def _clear_screen(self, full=True):
         if full:
             self._screen.fill(self._bgcolor)
             pygame.display.update()
@@ -155,7 +155,7 @@ class USBDriveReaderCopy(object):
     def check_file_exists(self,file):
         return (glob.glob(file + ".*") + glob.glob(file)) != []
 
-    def copyfile(self, src, dst, *, follow_symlinks=True):
+    def _copyfile(self, src, dst, *, follow_symlinks=True):
         """Copy data from src to dst.
 
         If follow_symlinks is not set and src is a symbolic link, a new
@@ -182,10 +182,10 @@ class USBDriveReaderCopy(object):
             size = os.stat(src).st_size
             with open(src, 'rb') as fsrc:
                 with open(dst, 'wb') as fdst:
-                    self.copyfileobj(fsrc, fdst, callback=self.draw_copy_progress, total=size)
+                    self._copyfileobj(fsrc, fdst, callback=self._draw_copy_progress, total=size)
         return dst
 
-    def copyfileobj(self, fsrc, fdst, callback, total, length=16 * 1024):
+    def _copyfileobj(self, fsrc, fdst, callback, total, length=16 * 1024):
         copied = 0
         while True:
             buf = fsrc.read(length)
@@ -195,14 +195,14 @@ class USBDriveReaderCopy(object):
             copied += len(buf)
             callback(copied, total=total)
 
-    def copy_with_progress(self, src, dst, *, follow_symlinks=True):
+    def _copy_with_progress(self, src, dst, *, follow_symlinks=True):
         if os.path.isdir(dst):
             dst = os.path.join(dst, os.path.basename(src))
 
         # clear screen before copying
-        self.clear_screen(False)
+        self._clear_screen(False)
 
-        self.copyfile(src, dst, follow_symlinks=follow_symlinks)
+        self._copyfile(src, dst, follow_symlinks=follow_symlinks)
         # shutil.copymode(src, dst)
         return dst
 
@@ -212,7 +212,7 @@ class USBDriveReaderCopy(object):
         """
         if(self._mounter.has_nodes()):
             self._mounter.mount_all()
-            self.copy_files(glob.glob(self._mount_path + '*'))
+            self._copy_files(glob.glob(self._mount_path + '*'))
 
         return [self._target_path]
 
