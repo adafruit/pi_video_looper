@@ -120,12 +120,26 @@ There are also pre-compiled images available from <https://videolooper.de> (but 
     
 ## How to install
 `sudo apt-get install git`  
+`cd ~`  
 `git clone https://github.com/adafruit/pi_video_looper`  
 `cd pi_video_looper`  
 `sudo ./install.sh`
 
-Default player is omxplayer. Use the `no_hello_video` flag to install without the hello_video player (a lot faster to install):  
+Default player is omxplayer. Use the `no_hello_video` flag to install without the hello_video player (a bit faster to install):  
 `sudo ./install.sh no_hello_video`
+
+## How to update
+An update is always like a fresh installation so you will loose custom changes made to the /boot/video_looper.ini   
+
+For backing up the current ini:     
+`sudo cp /boot/video_looper.ini /boot/video_looper.ini_backup`  
+
+For the update:    
+`cd ~`   
+`sudo rm -rf pi_video_looper`   
+`git clone https://github.com/adafruit/pi_video_looper`    
+`cd pi_video_looper`   
+`sudo ./install.sh` 
 
 ## Features and settings
 To change the settings of the video looper (e.g. random playback, copy mode, advanced features) edit the `/boot/video_looper.ini` file, i.e. by quitting the player with 'ESC' and logging in to the Raspberry with an attached keyboard, or remotely via ssh. Then edit the configuration file with `sudo nano /boot/video_looper.ini`.  
@@ -151,24 +165,6 @@ Note: files with the same name always get overwritten.
 * if you have only one video then omxplayer will also loop seamlessly (and with audio)
 
 * to reduce the wear of the SD card and potentially extend the lifespan of the player, you could enable the overlay filesystem via `raspi-config` and select Performance Options->Overlay Filesystem
-
-#### Raspberry Pi 4/5 multi screen output
-this section addresses mutli output for Raspberry Pis that have more than one HDMI output.  
-By default both HDMI outputs should display the same image. It's possible to have two loopers run independend of each other and output to invidiual HDMI outputs.  
-
-the following commands assume that you have already installed the video looper with the install script.
-
-```
-sudo cp /boot/video_looper.ini /boot/video_looper2.ini
-sudo cp /etc/supervisor/conf.d/video_looper.conf /etc/supervisor/conf.d/video_looper2.conf
-sudo sed -i "s/extra_args = /extra_args = --display 2 /g" /boot/video_looper.ini
-sudo sed -i "s/extra_args = /extra_args = --display 7 /g" /boot/video_looper2.ini
-sudo sed -i "s/program:video_looper/program:video_looper2/g" /etc/supervisor/conf.d/video_looper2.conf
-sudo sed -i "s/Adafruit_Video_Looper.video_looper/Adafruit_Video_Looper.video_looper \/boot\/video_looper2.ini/g" /etc/supervisor/conf.d/video_looper2.conf
-sudo service supervisor restart
-```
-
-now both HDMI outputs should run a looper independend of each other - you can modify the settings by editing `/boot/video_looper.ini` and `/boot/video_looper2.ini`. Initially they will both have identical settings except for "extra_args". Please note: having keyboard or GPIO control enabled may cause unexpected results (or it the looper might not run at all)
 
 ### Control
 The video looper can be controlled via keyboard input or via configured GPIO pins. 
