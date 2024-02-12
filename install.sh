@@ -15,6 +15,9 @@ else
 	sudo chmod 700 /run/user/1000
 fi
 
+# old version cleanup
+sudo supervisorctl stop video_looper &>/dev/null
+sudo rm /etc/supervisor/conf.d/video_looper.conf &>/dev/null
 
 echo "Installing dependencies..."
 echo "=========================="
