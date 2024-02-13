@@ -14,6 +14,12 @@ For a detailed tutorial visit: <https://learn.adafruit.com/raspberry-pi-video-lo
 There are also pre-compiled images available from <https://videolooper.de> (but they might not always contain the latest version of pi_video_looper)
 
 ## Changelog
+#### new in v1.0.17
+ - GPIO pins can now be used to send "keyboard commands"
+
+#### new in v1.0.16
+ - send previous/next chapter commands to omxplayer (o/i on keyboard)
+
 #### new in v1.0.15
  - one shot playback: option to enable stopping playback after each file (usefull in combination with gpio triggers)
 
@@ -119,7 +125,7 @@ There are also pre-compiled images available from <https://videolooper.de> (but 
 `cd pi_video_looper`  
 `sudo ./install.sh`
 
-Default player is omxplayer. Use the `no_hello_video` flag to install without the hello_video player (a lot faster to install):  
+Default player is omxplayer. Use the `no_hello_video` flag to install without the hello_video player (a bit faster to install):  
 `sudo ./install.sh no_hello_video`
 
 ## How to update
@@ -172,6 +178,8 @@ The following keyboard commands are active by default (can be disabled in the [v
 * "s" - Stop/Start - stops or starts playback of current file
 * "p" - Power off - stop playback and shutdown RPi
 * " " - (space bar) - Pause/Resume the omxplayer and imageplayer
+* "o" - next chapter (only omxplayer)
+* "i" - previous chapter (only omxplayer)
 
 #### GPIO control:
 To enable GPIO control you need to set a GPIO pin mapping via the `gpio_pin_map` in the `control` section of the video_looper.ini. 
@@ -181,14 +189,18 @@ action can be one of the following:
 * a filename as a string to play 
 * an absoulte index number (starting with 0) 
 * a string in the form of `+X` or `-X` (with X being an integer) for a relative jump
+* a keyboard command (see above) in the form of a pygame key constant (see list: https://www.pygame.org/docs/ref/key.html)
 
 Here are some examples that can be set: 
 * `"11" : 1`  -> pin 11 will start the second file in the playlist
 * `"13" : "-2"` -> pin 13 will jump back two files
 * `"15" : "video.mp4"` -> pin 15 will start the file "video.mp4" (if it exists)
 * `"16" : "+1"` -> pin 16 will start next file
+* `"18" : "K_SPACE"` -> pin 18 will send space command (= pause)
+* `"21" : "K_p"` -> pin 21 will send "p" keyboard command (= shutdown)
 
 Note: to be used as an absolute index the action needs to be an integer not a string
+Note 2: "keyboard_control" needs to be enabled in the ini for gpio to utilise keyboard commands
 
 ## Troubleshooting:
 * nothing happening (screen flashes once) when in copymode and new drive is plugged in?
