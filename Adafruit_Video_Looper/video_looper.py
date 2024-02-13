@@ -465,18 +465,19 @@ class VideoLooper:
                     self._playbackStopped = False
                 if event.key == pygame.K_o:
                     self._print("o was pressed. next chapter...")
-                    self._player.send_key("o")
+                    self._player.sendKey("o")
                 if event.key == pygame.K_i:
                     self._print("i was pressed. previous chapter...")
-                    self._player.send_key("i")
+                    self._player.sendKey("i")
     
     def _handle_gpio_control(self, pin):
         if self._pinMap == None:
             return
         
-        self._print(f'pin {pin} triggered: {action}')
-
         action = self._pinMap[str(pin)]
+
+        self._print(f'pin {pin} triggered: {action}')
+        
         if action in ['K_ESCAPE', 'K_k', 'K_s', 'K_SPACE', 'K_p', 'K_b', 'K_o', 'K_i']:
             pygame.event.post(pygame.event.Event(pygame.KEYDOWN, key=getattr(pygame, action, None)))
         else:
@@ -569,12 +570,16 @@ class VideoLooper:
         """Shut down the program"""
         self._print("quitting Video Looper")
 
+        if shutdown:
+            os.system("sudo shutdown now")
+
         self._playbackStopped = True
         self._running = False
         pygame.event.post(pygame.event.Event(pygame.QUIT))
 
         if self._player is not None:
             self._player.stop()
+
         if self._pinMap:
             GPIO.cleanup()
 
