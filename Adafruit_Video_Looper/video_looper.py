@@ -459,10 +459,10 @@ class VideoLooper:
                     self._playbackStopped = False
                 if event.key == pygame.K_o:
                     self._print("o was pressed. next chapter...")
-                    self._player.send_key("o")
+                    self._player.sendKey("o")
                 if event.key == pygame.K_i:
                     self._print("i was pressed. previous chapter...")
-                    self._player.send_key("i")
+                    self._player.sendKey("i")
     
     def _handle_gpio_control(self, pin):
         if self._pinMap == None:
