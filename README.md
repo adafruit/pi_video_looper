@@ -15,7 +15,7 @@ There are also pre-compiled images available from <https://videolooper.de> (but 
 
 ## Changelog
 #### new in v1.0.17
- - GPIO pins can now be used to send "keyboard commands"
+ - GPIO pins can now be used to send "keyboard commands", i.e. to pause playback or shut down the system
 
 #### new in v1.0.16
  - send previous/next chapter commands to omxplayer (o/i on keyboard)
@@ -142,7 +142,7 @@ For the update:
 `sudo ./install.sh` 
 
 ## Features and settings
-To change the settings of the video looper (e.g. random playback, copy mode, advanced features) edit the `/boot/video_looper.ini` file, i.e. by quitting the player with 'ESC' and logging in to the Raspberry with an attached keyboard, or remotely via ssh. Then edit the configuration file with `sudo nano /boot/video_looper.ini`.  
+To change the settings of the video looper (e.g. random playback, copy mode, GPIO control, advanced features) edit the `/boot/video_looper.ini` file, i.e. by quitting the player with 'ESC' and logging in to the Raspberry with an attached keyboard, or remotely via ssh. Then edit the configuration file with `sudo nano /boot/video_looper.ini`.
 
 Alternatively insert the SD card into your computer and edit it with your preferred text editor. 
 
@@ -168,7 +168,7 @@ Note: files with the same name always get overwritten.
 
 ### Control
 The video looper can be controlled via keyboard input or via configured GPIO pins. 
-keyboard control is enabled by default via the ini setting `keyboard_control`
+Keyboard control is enabled by default via the `keyboard_control` setting in the video_looper.ini file. 
 
 #### keyboard commands:
 The following keyboard commands are active by default (can be disabled in the [video_looper.ini](https://github.com/adafruit/pi_video_looper/blob/master/assets/video_looper.ini)):
@@ -183,27 +183,32 @@ The following keyboard commands are active by default (can be disabled in the [v
 
 #### GPIO control:
 To enable GPIO control you need to set a GPIO pin mapping via the `gpio_pin_map` in the `control` section of the video_looper.ini. 
-Pins numbers are in "BOARD" numbering - see: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html  
-the pin mapping has the form: "pinnumber" : "action"  
-action can be one of the following:
+Pins numbers are in "BOARD" numbering - see: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html. Bridge a mapped pin with a Ground pin to trigger it.
+
+The pin mapping has the form: "pinnumber" : "action”. The action can be one of the following:
 * a filename as a string to play 
-* an absoulte index number (starting with 0) 
-* a string in the form of `+X` or `-X` (with X being an integer) for a relative jump
+* an absolute index number (starting with 0) 
+* a string in the form of `+n` or `-n` (with n being an integer) for a relative jump
 * a keyboard command (see above) in the form of a pygame key constant (see list: https://www.pygame.org/docs/ref/key.html)
 
 Here are some examples that can be set: 
 * `"11" : 1`  -> pin 11 will start the second file in the playlist
-* `"13" : "-2"` -> pin 13 will jump back two files
-* `"15" : "video.mp4"` -> pin 15 will start the file "video.mp4" (if it exists)
-* `"16" : "+1"` -> pin 16 will start next file
-* `"18" : "K_SPACE"` -> pin 18 will send space command (= pause)
-* `"21" : "K_p"` -> pin 21 will send "p" keyboard command (= shutdown)
+* `"13" : "4"` -> pin 13 starts the 5th video
+* `"16" : "+2"` -> pin 16 jumps 2 videos ahead
+* `"18" : "-1"` -> pin 18 jumps one video back
+* `"15" : "video.mp4"` -> pin 15 plays a file with name "video.mp4" (if it exists)
+* `"19" : "K_SPACE"` -> pin 19 sends the "space" keyboard command, pausing the current video
+* `"21" : "K_p"` -> pin 21 sends "p" keyboard command and thus triggers the shutdown of the Raspberry Pi
 
-Note: to be used as an absolute index the action needs to be an integer not a string
-Note 2: "keyboard_control" needs to be enabled in the ini for gpio to utilise keyboard commands
+For your convenience, these exact mappings can be easily enabled by uncommenting the example line in the video_looper.ini. You can also define your own mappings.
+
+Note: to be used as an absolute index the action needs to be an integer not a string.
+Note 2: "keyboard_control" needs to be enabled in the ini for gpio to utilise keyboard commands.
+
 
 ## Troubleshooting:
 * nothing happening (screen flashes once) when in copymode and new drive is plugged in?
     * check if you have the "password file" on your drive (see copymode explained above)
 * log output can be found in `/var/log/supervisor/`. Enable detailed logging in the video_looper.ini with console_output = true.  
   Use `sudo tail -f /var/log/supervisor/video_looper-stdout*` and `sudo tail -f /var/log/supervisor/video_looper-stderr*` to view the logs.
+* It’s currently doubtful if the pi_video_looper (which requires the legacy Raspberry Pi OS because of its omxplayer dependency) runs on the new Raspberry Pi 5.
