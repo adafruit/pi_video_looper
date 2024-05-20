@@ -527,13 +527,18 @@ class VideoLooper:
                     if self._playlist.length()==1:
                         infotext = '(endless loop)'
 
+                    #player loop setting:
+                    player_loop = -1 if self._playlist.length()==1 else None
+
+                    #special one-shot playback condition
                     if self._one_shot_playback:
                         self._playbackStopped = True
-
+                        player_loop = None
+                        
                     # Start playing the first available movie.
                     self._print('Playing movie: {0} {1}'.format(movie, infotext))
                     # todo: maybe clear screen to black so that background (image/color) is not visible for videos with a resolution that is < screen resolution
-                    self._player.play(movie, loop=-1 if self._playlist.length()==1 else None, vol = self._sound_vol)
+                    self._player.play(movie, loop=player_loop, vol = self._sound_vol)
 
             # Check for changes in the file search path (like USB drives added)
             # and rebuild the playlist.
