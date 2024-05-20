@@ -14,6 +14,10 @@ For a detailed tutorial visit: <https://learn.adafruit.com/raspberry-pi-video-lo
 There are also pre-compiled images available from <https://videolooper.de> (but they might not always contain the latest version of pi_video_looper)
 
 ## Changelog
+#### v1.0.18
+ - fixed one-shot playback with only one video file
+ - added option to not start video playback on looper startup (boot)
+
 #### new in v1.0.17
  - GPIO pins can now be used to send "keyboard commands", i.e. to pause playback or shut down the system
 

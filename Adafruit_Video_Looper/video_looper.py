@@ -58,6 +58,7 @@ class VideoLooper:
         self._osd = self._config.getboolean('video_looper', 'osd')
         self._is_random = self._config.getboolean('video_looper', 'is_random')
         self._one_shot_playback = self._config.getboolean('video_looper', 'one_shot_playback')
+        self._play_on_startup = self._config.getboolean('video_looper', 'play_on_startup')
         self._resume_playlist = self._config.getboolean('video_looper', 'resume_playlist')
         self._keyboard_control = self._config.getboolean('control', 'keyboard_control')
         self._copyloader = self._config.getboolean('copymode', 'copyloader')
@@ -105,7 +106,8 @@ class VideoLooper:
         self._medium_font   = pygame.font.Font(None, 96)
         self._big_font   = pygame.font.Font(None, 250)
         self._running    = True
-        self._playbackStopped = False
+        # set the inital playback state according to the startup setting.
+        self._playbackStopped = not self._play_on_startup
         #used for not waiting the first time
         self._firstStart = True
 
@@ -527,13 +529,18 @@ class VideoLooper:
                     if self._playlist.length()==1:
                         infotext = '(endless loop)'
 
+                    #player loop setting:
+                    player_loop = -1 if self._playlist.length()==1 else None
+
+                    #special one-shot playback condition
                     if self._one_shot_playback:
                         self._playbackStopped = True
-
+                        player_loop = None
+                        
                     # Start playing the first available movie.
                     self._print('Playing movie: {0} {1}'.format(movie, infotext))
                     # todo: maybe clear screen to black so that background (image/color) is not visible for videos with a resolution that is < screen resolution
-                    self._player.play(movie, loop=-1 if self._playlist.length()==1 else None, vol = self._sound_vol)
+                    self._player.play(movie, loop=player_loop, vol = self._sound_vol)
 
             # Check for changes in the file search path (like USB drives added)
             # and rebuild the playlist.
