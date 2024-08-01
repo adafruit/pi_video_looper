@@ -14,6 +14,9 @@ For a detailed tutorial visit: <https://learn.adafruit.com/raspberry-pi-video-lo
 There are also pre-compiled images available from <https://videolooper.de> (but they might not always contain the latest version of pi_video_looper)
 
 ## Changelog
+#### new in v1.0.19
+ - keyboard and gpio control can now be disabled while a video is running - makes the most sense together with the "one shot playback" setting
+
 #### v1.0.18
  - fixed one-shot playback with only one video file
  - added option to not start video playback on looper startup (boot)
