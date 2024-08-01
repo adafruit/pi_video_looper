@@ -187,7 +187,7 @@ The following keyboard commands are active by default (can be disabled in the [v
 
 #### GPIO control:
 To enable GPIO control you need to set a GPIO pin mapping via the `gpio_pin_map` in the `control` section of the video_looper.ini. 
-Pins numbers are in "BOARD" numbering - see: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html. Bridge a mapped pin with a Ground pin to trigger it.
+Pins numbers are in "BOARD" numbering - see: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#gpio. Bridge a mapped pin with a Ground pin to trigger it.
 
 The pin mapping has the form: "pinnumber" : "action”. The action can be one of the following:
 * a filename as a string to play 
