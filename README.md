@@ -14,6 +14,9 @@ For a detailed tutorial visit: <https://learn.adafruit.com/raspberry-pi-video-lo
 There are also pre-compiled images available from <https://videolooper.de> (but they might not always contain the latest version of pi_video_looper)
 
 ## Changelog
+#### new in v1.0.19
+ - keyboard and gpio control can now be disabled while a video is running - makes the most sense together with the "one shot playback" setting
+
 #### v1.0.18
  - fixed one-shot playback with only one video file
  - added option to not start video playback on looper startup (boot)
@@ -187,7 +190,7 @@ The following keyboard commands are active by default (can be disabled in the [v
 
 #### GPIO control:
 To enable GPIO control you need to set a GPIO pin mapping via the `gpio_pin_map` in the `control` section of the video_looper.ini. 
-Pins numbers are in "BOARD" numbering - see: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html. Bridge a mapped pin with a Ground pin to trigger it.
+Pins numbers are in "BOARD" numbering - see: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#gpio. Bridge a mapped pin with a Ground pin to trigger it.
 
 The pin mapping has the form: "pinnumber" : "action”. The action can be one of the following:
 * a filename as a string to play 
