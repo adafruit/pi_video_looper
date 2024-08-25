@@ -120,6 +120,8 @@ class VideoLooper:
             self._keyboard_thread.start()
         
         pinMapSetting = self._config.get('control', 'gpio_pin_map', raw=True)
+        self._gpioPinMode = self._config.getboolean('control', 'gpio_pin_mode')
+
         if pinMapSetting:
             try:
                 self._pinMap = json.loads("{"+pinMapSetting+"}")
@@ -497,8 +499,8 @@ class VideoLooper:
             return
         GPIO.setmode(GPIO.BOARD)
         for pin in self._pinMap:
-            GPIO.setup(int(pin), GPIO.IN, pull_up_down=GPIO.PUD_UP)
-            GPIO.add_event_detect(int(pin), GPIO.FALLING, callback=self._handle_gpio_control,  bouncetime=200) 
+            GPIO.setup(int(pin), GPIO.IN, pull_up_down=GPIO.PUD_UP if self._gpioPinMode else GPIO.PUD_DOWN)
+            GPIO.add_event_detect(int(pin), GPIO.FALLING if self._gpioPinMode else GPIO.RISING, callback=self._handle_gpio_control,  bouncetime=200) 
             self._print("pin {} action set to: {}".format(pin, self._pinMap[pin]))
 
         
