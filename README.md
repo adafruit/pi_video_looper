@@ -10,6 +10,9 @@ Currently only the __Legacy__ version of Raspberry Pi OS Lite is supported.
 The last working image is this one:
 <https://downloads.raspberrypi.com/raspios_oldstable_lite_armhf/images/raspios_oldstable_lite_armhf-2022-01-28/2022-01-28-raspios-buster-armhf-lite.zip>
 
+If you need to run this image on PI 3A+ you need to add newer firmware files after the flashing.
+Download firmware files from [here](https://github.com/raspberrypi/firmware/archive/refs/heads/stable.zip) and copy all the fixup*.dat and start*.elf from the boot folder of the zip to the boot folder of your SD card (overwriting existing files)
+
 For a detailed tutorial visit: <https://learn.adafruit.com/raspberry-pi-video-looper/installation>  
 There are also pre-compiled images available from <https://videolooper.de> (but they might not always contain the latest version of pi_video_looper)
 
