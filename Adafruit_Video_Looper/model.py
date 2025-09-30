@@ -73,7 +73,17 @@ class Playlist:
         
         # Start Random movie
         if is_random:
-            self._index = random.randrange(0, self.length())
+            # First, try to find movies that haven't been played yet
+            unplayed_movies = [i for i, movie in enumerate(self._movies) if movie.playcount == 0]
+            
+            if unplayed_movies:
+                # If there are unplayed movies, choose randomly from them
+                self._index = random.choice(unplayed_movies)
+            else:
+                # If all movies have been played at least once, reset all play counts
+                # and then choose randomly from all movies
+                self.clear_all_playcounts()
+                self._index = random.randrange(0, self.length())
         else:
             # Start at the first movie or resume and increment through them in order.
             if self._index is None:
