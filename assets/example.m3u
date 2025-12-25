@@ -1,0 +1,6 @@
+#EXTM3U
+#EXTINF:0,TitleForVideo1
+videoFile.mp4
+#EXTINF:0,Title2
+videoFile2.mp4
+videoFile3.mp4
