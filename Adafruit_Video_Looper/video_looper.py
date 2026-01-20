@@ -245,9 +245,9 @@ class VideoLooper:
             for x in os.listdir(path):
                 # Ignore hidden files (useful when file loaded on usb key from an OSX computer
                 if x[0] != '.' and re.search('\.({0})$'.format(self._extensions), x, flags=re.IGNORECASE):
-                    repeatsetting = re.search('_repeat_([0-9]*)x', x, flags=re.IGNORECASE)
-                    if (repeatsetting is not None):
-                        repeat = repeatsetting.group(1)
+                    repeatsetting = re.search('_repeat_(-?)([0-9]*)x', x, flags=re.IGNORECASE)
+                    if (repeatsetting is not None and repeatsetting.group(2) != ''):
+                        repeat = int(repeatsetting.group(1)+repeatsetting.group(2))
                     else:
                         repeat = 1
                     basename, extension = os.path.splitext(x)
@@ -542,6 +542,9 @@ class VideoLooper:
 
                     #player loop setting:
                     player_loop = -1 if self._playlist.length()==1 else None
+                    
+                    #special movie with infinite repeat
+                    player_loop = -1 if movie.repeats == -1 else None
 
                     #special one-shot playback condition
                     if self._one_shot_playback:
