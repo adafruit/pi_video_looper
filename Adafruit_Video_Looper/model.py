@@ -29,7 +29,7 @@ class Movie:
         self.playcount = 0
         
     def finish_playing(self):
-        self.playcount = self.repeats+1
+        self.playcount = self.repeats
     
     def __lt__(self, other):
         return self.target < other.target
@@ -56,6 +56,7 @@ class Playlist:
         self._index = None
         self._next = None
         self._is_random = False
+        self._is_random_unique = False
         self._resume = False
 
     def get_next(self) -> Movie:
@@ -83,7 +84,7 @@ class Playlist:
 
         # Start Random movie
         if self._is_random:
-            self._index = random.randrange(0, self.length())
+            self._index = self._movies.index(self._select_random_movie())
         else:
             # Start at the first movie or resume and increment through them in order.
             if self._index is None:
@@ -112,7 +113,7 @@ class Playlist:
     def set_next(self, thing: Union[Movie, str, int]):
         if isinstance(thing, Movie):
             if (thing in self._movies):
-                self._next(thing)
+                self._next = thing
         elif isinstance(thing, str):
             if thing in self._movies:
                 self._next = self._movies[self._movies.index(thing)]
@@ -123,11 +124,15 @@ class Playlist:
                 self._next = self._movies[thing]
         else:
             self._next = None
-        self.clear_all_playcounts()
+        if not (self._is_random and self._is_random_unique):
+            self.clear_all_playcounts()
         self._movies[self._index].finish_playing() #set the current to max playcount so it will not get played again
     
     def set_random(self, enable: bool):
         self._is_random = enable
+    
+    def set_random_unique(self, enable: bool):
+        self._is_random_unique = enable
     
     def set_resume(self, enable: bool):
         self._resume = enable
@@ -136,7 +141,22 @@ class Playlist:
     def seek(self, amount:int):
         self.set_next((self._index+amount)%self.length())
         if self._is_random:
-            self.set_next(random.randrange(0, self.length()))
+            self.set_next(self._select_random_movie())
+            
+    def _select_random_movie(self) -> Movie:
+        """Select a random movie from the playlist."""
+        
+        if self._is_random_unique:
+            # select randomly from unplayed movies
+            unplayed_movies = [m for m in self._movies if m.playcount < m.repeats]
+            if len(unplayed_movies) == 0:
+                # all movies played, reset playcounts
+                self.clear_all_playcounts()
+                unplayed_movies = self._movies
+            return random.choice(unplayed_movies)
+        else:
+            # select randomly from all movies
+            return random.choice(self._movies)
 
     def length(self):
         """Return the number of movies in the playlist."""
@@ -147,7 +167,11 @@ class Playlist:
             movie.clear_playcount()
     
     def __str__(self):
-        info = f"Mode: {'Random' if self._is_random else 'Sequential'}, Resume: {self._resume}\n"
+        if self._is_random:
+            playbackmode = f'Random ({"unique" if self._is_random_unique else "all"})'
+        else:  
+            playbackmode = 'Sequential'
+        info = f"Mode: {playbackmode}, Resume: {self._resume}\n"
         for m in self._movies:
             info += f"Movie: {str(m)}, Repeats: {m.repeats}, Played: {m.playcount}\n"
         return info

@@ -18,11 +18,12 @@ There are also pre-compiled images available from <https://videolooper.de> (but 
 
 ## Changelog
 #### new in v1.0.20
- - GPIO pin can be set via ini to be pulled high or low 
+ - GPIO pins can be set via ini to be pulled high or low 
  - special "loop specific file" function  
    You can have multiple videos in the playlist but the file with _repeat_-1x will always be looped - this is useful if you want to loop one video but allow jumps to other videos via e.g. GPIO pins  
  - added a free space check to copymode - file will only be copied if the target (SD Card) has enough free space available (+100MB buffer) 
  - random playback is honored when using "skip"
+ - added option to randomly select only files that have not been played yet
 
 #### new in v1.0.19
  - keyboard and gpio control can now be disabled while a video is running - makes the most sense together with the "one shot playback" setting

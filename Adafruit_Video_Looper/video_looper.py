@@ -56,9 +56,10 @@ class VideoLooper:
         self._console_output = self._config.getboolean('video_looper', 'console_output')
         # Load other configuration values.
         self._osd = self._config.getboolean('video_looper', 'osd')
-        self._is_random = self._config.getboolean('video_looper', 'is_random')
-        self._one_shot_playback = self._config.getboolean('video_looper', 'one_shot_playback')
-        self._play_on_startup = self._config.getboolean('video_looper', 'play_on_startup')
+        self._is_random_unique = self._config.getboolean('video_looper', 'is_random_unique', fallback=False)
+        self._is_random = self._config.getboolean('video_looper', 'is_random', fallback=False) or self._is_random_unique
+        self._one_shot_playback = self._config.getboolean('video_looper', 'one_shot_playback', fallback=False)
+        self._play_on_startup = self._config.getboolean('video_looper', 'play_on_startup', fallback=True)
         self._resume_playlist = self._config.getboolean('video_looper', 'resume_playlist')
         self._keyboard_control = self._config.getboolean('control', 'keyboard_control')
         self._keyboard_control_disabled_while_playback = self._config.getboolean('control', 'keyboard_control_disabled_while_playback')
@@ -506,6 +507,7 @@ class VideoLooper:
         # Get playlist of movies to play from file reader.
         self._playlist = self._build_playlist()
         self._playlist.set_random(self._is_random)
+        self._playlist.set_random_unique(self._is_random_unique)
         self._playlist.set_resume(self._resume_playlist) 
         self._prepare_to_run_playlist(self._playlist)
         self._set_hardware_volume()
@@ -517,12 +519,14 @@ class VideoLooper:
                 if movie is not None: #just to avoid errors
 
                     if movie.playcount >= movie.repeats:
-                        movie.clear_playcount()
+                        if not (self._is_random and self._is_random_unique):
+                            movie.clear_playcount()
                         movie = self._playlist.get_next()
                     elif self._player.can_loop_count() and movie.playcount > 0:
-                        movie.clear_playcount()
+                        if not (self._is_random and self._is_random_unique):
+                            movie.clear_playcount()
                         movie = self._playlist.get_next()
-
+                        
                     movie.was_played()
 
                     if self._wait_time > 0 and not self._firstStart:
@@ -551,7 +555,7 @@ class VideoLooper:
                     if self._one_shot_playback:
                         self._playbackStopped = True
                         player_loop = None
-                        
+                                        
                     # Start playing the first available movie.
                     self._print(f"Playing movie: {movie} {infotext}")
                     # todo: maybe clear screen to black so that background (image/color) is not visible for videos with a resolution that is < screen resolution
@@ -566,6 +570,9 @@ class VideoLooper:
                 self._print("player stopped")
                 # Rebuild playlist and show countdown again (if OSD enabled).
                 self._playlist = self._build_playlist()
+                self._playlist.set_random(self._is_random)
+                self._playlist.set_random_unique(self._is_random_unique)
+                self._playlist.set_resume(self._resume_playlist) 
                 #refresh background image
                 if self._copyloader:
                     self._bgimage = self._load_bgimage()
