@@ -42,7 +42,7 @@ class Movie:
         return False
 
     def __str__(self):
-        return "{0} ({1})".format(self.filename, self.title) if self.title else self.filename
+        return f"{self.filename} ({self.title})" if self.title else self.filename
 
     def __repr__(self):
         return repr((self.target, self.filename, self.title, self.repeats, self.playcount))
@@ -55,8 +55,10 @@ class Playlist:
         self._movies = movies
         self._index = None
         self._next = None
+        self._is_random = False
+        self._resume = False
 
-    def get_next(self, is_random, resume = False) -> Movie:
+    def get_next(self) -> Movie:
         """Get the next movie in the playlist. Will loop to start of playlist
         after reaching end.
         """
@@ -72,6 +74,7 @@ class Playlist:
             return next
 
         # check if any movie is set to infinite repeats and return it
+        # this must be after the _next check so jumping to a specific movie still works
         for m in self._movies:
             if getattr(m, "repeats", None) == -1:
                 self._next = None
@@ -79,14 +82,14 @@ class Playlist:
                 return m
 
         # Start Random movie
-        if is_random:
+        if self._is_random:
             self._index = random.randrange(0, self.length())
         else:
             # Start at the first movie or resume and increment through them in order.
             if self._index is None:
-                if resume:
+                if self._resume:
                     try:
-                        with open('playlist_index.txt', 'r') as f:
+                        with open("playlist_index.txt", "r") as f:
                             self._index = int(f.read())
                     except FileNotFoundError:
                         self._index = 0
@@ -99,8 +102,8 @@ class Playlist:
             if self._index >= self.length():
                 self._index = 0
 
-        if resume:
-            with open('playlist_index.txt','w') as f:
+        if self._resume:
+            with open("playlist_index.txt","w") as f:
                 f.write(str(self._index))
 
         return self._movies[self._index]
@@ -122,10 +125,18 @@ class Playlist:
             self._next = None
         self.clear_all_playcounts()
         self._movies[self._index].finish_playing() #set the current to max playcount so it will not get played again
+    
+    def set_random(self, enable: bool):
+        self._is_random = enable
+    
+    def set_resume(self, enable: bool):
+        self._resume = enable
        
     # sets next relative to current index
     def seek(self, amount:int):
         self.set_next((self._index+amount)%self.length())
+        if self._is_random:
+            self.set_next(random.randrange(0, self.length()))
 
     def length(self):
         """Return the number of movies in the playlist."""
@@ -134,3 +145,9 @@ class Playlist:
     def clear_all_playcounts(self):
         for movie in self._movies:
             movie.clear_playcount()
+    
+    def __str__(self):
+        info = f"Mode: {'Random' if self._is_random else 'Sequential'}, Resume: {self._resume}\n"
+        for m in self._movies:
+            info += f"Movie: {str(m)}, Repeats: {m.repeats}, Played: {m.playcount}\n"
+        return info
