@@ -2,7 +2,7 @@
 # Author: Tony DiCola
 # License: GNU GPLv2, see LICENSE.txt
 import random
-from os.path import basename
+from os.path import basename, splitext
 from typing import Optional, Union
 
 random.seed()
@@ -36,7 +36,7 @@ class Movie:
 
     def __eq__(self, other):
         if isinstance(other, str):
-            return self.filename == other
+            return self.filename == other or self.title == other or self.title == splitext(other)[0]
         if isinstance(other, Movie):
             return self.target == other.target
         return False

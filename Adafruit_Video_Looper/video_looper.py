@@ -245,13 +245,15 @@ class VideoLooper:
             for x in os.listdir(path):
                 # Ignore hidden files (useful when file loaded on usb key from an OSX computer
                 if x[0] != '.' and re.search('\.({0})$'.format(self._extensions), x, flags=re.IGNORECASE):
+                    moviename = None
                     repeatsetting = re.search('_repeat_(-?)([0-9]*)x', x, flags=re.IGNORECASE)
                     if (repeatsetting is not None and repeatsetting.group(2) != ''):
-                        repeat = int(repeatsetting.group(1)+repeatsetting.group(2))
+                        repeat = int(repeatsetting.group(1) + repeatsetting.group(2))
+                        moviename = os.path.splitext(re.sub('_repeat_(-?)([0-9]*)x', '', x, flags=re.IGNORECASE))[0]
                     else:
                         repeat = 1
-                    basename, extension = os.path.splitext(x)
-                    movies.append(Movie('{0}/{1}'.format(path.rstrip('/'), x), basename, repeat))
+                        moviename = os.path.splitext(x)[0]
+                    movies.append(Movie('{0}/{1}'.format(path.rstrip('/'), x), moviename, repeat))
 
             # Get the ALSA hardware volume from the file in the usb key
             if self._alsa_hw_vol_file:

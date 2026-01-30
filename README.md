@@ -196,7 +196,7 @@ To enable GPIO control you need to set a GPIO pin mapping via the `gpio_pin_map`
 Pins numbers are in "BOARD" numbering - see: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#gpio. Bridge a mapped pin with a Ground pin to trigger it.
 
 The pin mapping has the form: "pinnumber" : "action”. The action can be one of the following:
-* a filename as a string to play 
+* a filename as a string or movie title (= filename without extension) - "_repeat_Nx" can be omitted from the filename  
 * an absolute index number (starting with 0) 
 * a string in the form of `+n` or `-n` (with n being an integer) for a relative jump
 * a keyboard command (see above) in the form of a pygame key constant (see list: https://www.pygame.org/docs/ref/key.html)
