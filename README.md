@@ -18,7 +18,10 @@ There are also pre-compiled images available from <https://videolooper.de> (but 
 
 ## Changelog
 #### new in v1.0.20
- - gpio pin can be set via ini to be pulled high or low 
+ - GPIO pin can be set via ini to be pulled high or low 
+ - special "loop specific file" function  
+   You can have multiple videos in the playlist but the file with _repeat_-1x will always be looped - this is useful if you want to loop one video but allow jumps to other videos via e.g. GPIO pins  
+ - added a free space check to copymode - file will only be copied if the target (SD Card) has enough free space available (+100MB buffer) 
 
 #### new in v1.0.19
  - keyboard and gpio control can now be disabled while a video is running - makes the most sense together with the "one shot playback" setting
@@ -34,7 +37,7 @@ There are also pre-compiled images available from <https://videolooper.de> (but 
  - send previous/next chapter commands to omxplayer (o/i on keyboard)
 
 #### new in v1.0.15
- - one shot playback: option to enable stopping playback after each file (usefull in combination with gpio triggers)
+ - one shot playback: option to enable stopping playback after each file (useful in combination with gpio triggers)
 
 #### new in v1.0.14
  - control the video looper via RPI GPIO pins (see section "control" below)
@@ -178,6 +181,8 @@ Note: files with the same name always get overwritten.
 * you can have one video repeated X times before playing the next by adding _repeat_Nx to the filename of a video, where N is a positive number
     * with hello_video there is no gap when a video is repeated but there is a small gap between different videos
     * with omxplayer there will also be a short gap between the repeats
+
+* by adding _repeat_-1x the file will be looped forever even if other files exist - this is useful for having one video loop but allow jumps to other video via e.g. GPIO
     
 * if you have only one video then omxplayer will also loop seamlessly (and with audio)
 
