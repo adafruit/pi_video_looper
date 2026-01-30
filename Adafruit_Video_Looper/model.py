@@ -2,7 +2,7 @@
 # Author: Tony DiCola
 # License: GNU GPLv2, see LICENSE.txt
 import random
-from os.path import basename
+from os.path import basename, splitext
 from typing import Optional, Union
 
 random.seed()
@@ -36,7 +36,7 @@ class Movie:
 
     def __eq__(self, other):
         if isinstance(other, str):
-            return self.filename == other
+            return self.filename == other or self.title == other or self.title == splitext(other)[0]
         if isinstance(other, Movie):
             return self.target == other.target
         return False
@@ -70,7 +70,14 @@ class Playlist:
             self._next = None # reset next
             self._index=self._movies.index(next)
             return next
-        
+
+        # check if any movie is set to infinite repeats and return it
+        for m in self._movies:
+            if getattr(m, "repeats", None) == -1:
+                self._next = None
+                self._index = self._movies.index(m)
+                return m
+
         # Start Random movie
         if is_random:
             self._index = random.randrange(0, self.length())

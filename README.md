@@ -10,6 +10,9 @@ Currently only the __Legacy__ version of Raspberry Pi OS Lite is supported.
 The last working image is this one:
 <https://downloads.raspberrypi.com/raspios_oldstable_lite_armhf/images/raspios_oldstable_lite_armhf-2022-01-28/2022-01-28-raspios-buster-armhf-lite.zip>
 
+If you need to run this image on PI 3A+ you need to add newer firmware files after the flashing.
+Download firmware files from [here](https://github.com/raspberrypi/firmware/archive/refs/heads/stable.zip) and copy all the fixup*.dat and start*.elf from the boot folder of the zip to the boot folder of your SD card (overwriting existing files)
+
 For a detailed tutorial visit: <https://learn.adafruit.com/raspberry-pi-video-looper/installation>  
 There are also pre-compiled images available from <https://videolooper.de> (but they might not always contain the latest version of pi_video_looper)
 
@@ -196,7 +199,7 @@ To enable GPIO control you need to set a GPIO pin mapping via the `gpio_pin_map`
 Pins numbers are in "BOARD" numbering - see: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#gpio. Bridge a mapped pin with a Ground pin to trigger it.
 
 The pin mapping has the form: "pinnumber" : "action”. The action can be one of the following:
-* a filename as a string to play 
+* a filename as a string or movie title (= filename without extension) - "_repeat_Nx" can be omitted from the filename  
 * an absolute index number (starting with 0) 
 * a string in the form of `+n` or `-n` (with n being an integer) for a relative jump
 * a keyboard command (see above) in the form of a pygame key constant (see list: https://www.pygame.org/docs/ref/key.html)
