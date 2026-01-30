@@ -72,12 +72,11 @@ class Playlist:
             return next
 
         # check if any movie is set to infinite repeats and return it
-        if any(getattr(m, "repeats", None) == -1 for m in self._movies):
-            for m in self._movies:
-                if getattr(m, "repeats", None) == -1:
-                    self._next = None
-                    self._index = self._movies.index(m)
-                    return m
+        for m in self._movies:
+            if getattr(m, "repeats", None) == -1:
+                self._next = None
+                self._index = self._movies.index(m)
+                return m
 
         # Start Random movie
         if is_random:
