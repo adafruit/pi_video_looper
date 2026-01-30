@@ -180,9 +180,18 @@ class USBDriveReaderCopy(object):
             os.symlink(os.readlink(src), dst)
         else:
             size = os.stat(src).st_size
-            with open(src, 'rb') as fsrc:
-                with open(dst, 'wb') as fdst:
-                    self._copyfileobj(fsrc, fdst, callback=self._draw_copy_progress, total=size)
+            # check if dst has enough free space
+            freespace = shutil.disk_usage(os.path.dirname(dst)).free
+            if freespace > (size + (100 * 1024 * 1024)):  # add 100MB buffer
+                with open(src, "rb") as fsrc:
+                    with open(dst, "wb") as fdst:
+                        self._copyfileobj(
+                            fsrc, fdst, callback=self._draw_copy_progress, total=size
+                        )
+            else:
+                self._clear_screen()
+                self._draw_info_text("Target has not enough free space...")
+                time.sleep(5)
         return dst
 
     def _copyfileobj(self, fsrc, fdst, callback, total, length=16 * 1024):

@@ -132,6 +132,10 @@ There are also pre-compiled images available from <https://videolooper.de> (but 
  - option for displaying an image instead of a blank screen between videos
     
 ## How to install
+You need to run this if you use the image mentioned above (2022-01-28-raspios-buster-armhf-lite)    
+`echo "deb http://legacy.raspbian.org/raspbian/ buster main contrib non-free rpi" | sudo tee /etc/apt/sources.list`  
+
+then proceed as normal:    
 `sudo apt-get install git`  
 `cd ~`  
 `git clone https://github.com/adafruit/pi_video_looper`  
