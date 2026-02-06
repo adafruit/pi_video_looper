@@ -61,6 +61,7 @@ class VideoLooper:
         self._one_shot_playback = self._config.getboolean('video_looper', 'one_shot_playback', fallback=False)
         self._play_on_startup = self._config.getboolean('video_looper', 'play_on_startup', fallback=True)
         self._resume_playlist = self._config.getboolean('video_looper', 'resume_playlist')
+        self._playlist_path = self._config.get('playlist', 'path', fallback='')
         self._keyboard_control = self._config.getboolean('control', 'keyboard_control')
         self._keyboard_control_disabled_while_playback = self._config.getboolean('control', 'keyboard_control_disabled_while_playback')
         self._gpio_control_disabled_while_playback = self._config.getboolean('control', 'gpio_control_disabled_while_playback')
@@ -194,40 +195,36 @@ class VideoLooper:
         """Try to build a playlist (object) from a playlist (file).
         Falls back to an auto-generated playlist with all files.
         """
-        if self._config.has_option('playlist', 'path'):
-            playlist_path = self._config.get('playlist', 'path')
-            if playlist_path != "":
-                if os.path.isabs(playlist_path):
-                    if not os.path.isfile(playlist_path):
-                        self._print(f"Playlist path {playlist_path} does not exist.")
-                        return self._build_playlist_from_all_files()
-                        #raise RuntimeError('Playlist path {0} does not exist.'.format(playlist_path))
-                else:
-                    paths = self._reader.search_paths()
-                    
-                    if not paths:
-                        return Playlist([])
-                    
-                    for path in paths:
-                        maybe_playlist_path = os.path.join(path, playlist_path)
-                        if os.path.isfile(maybe_playlist_path):
-                            playlist_path = maybe_playlist_path
-                            self._print(f"Playlist path resolved to {playlist_path}.")
-                            break
-                    else:
-                        self._print(f"Playlist path {playlist_path} does not resolve to any file.")
-                        return self._build_playlist_from_all_files()
-                        #raise RuntimeError('Playlist path {0} does not resolve to any file.'.format(playlist_path))
-
-                basepath, extension = os.path.splitext(playlist_path)
-                if extension == '.m3u' or extension == '.m3u8':
-                    return build_playlist_m3u(playlist_path)
-                else:
-                    self._print(f'Unrecognized playlist format {extension}.')
+        if self._playlist_path != "":
+            if os.path.isabs(self._playlist_path):
+                if not os.path.isfile(self._playlist_path):
+                    self._print(f"Playlist path {self._playlist_path} does not exist.")
                     return self._build_playlist_from_all_files()
-                    #raise RuntimeError('Unrecognized playlist format {0}.'.format(extension))
+                    #raise RuntimeError('Playlist path {0} does not exist.'.format(playlist_path))
             else:
+                paths = self._reader.search_paths()
+                
+                if not paths:
+                    return Playlist([])
+                
+                for path in paths:
+                    maybe_playlist_path = os.path.join(path, self._playlist_path)
+                    if os.path.isfile(maybe_playlist_path):
+                        playlist_path = maybe_playlist_path
+                        self._print(f"Playlist path resolved to {playlist_path}.")
+                        break
+                else:
+                    self._print(f"Playlist path {self._playlist_path} does not resolve to any file.")
+                    return self._build_playlist_from_all_files()
+                    #raise RuntimeError('Playlist path {0} does not resolve to any file.'.format(playlist_path))
+
+            basepath, extension = os.path.splitext(playlist_path)
+            if extension == '.m3u' or extension == '.m3u8':
+                return build_playlist_m3u(playlist_path)
+            else:
+                self._print(f'Unrecognized playlist format {extension}.')
                 return self._build_playlist_from_all_files()
+                #raise RuntimeError('Unrecognized playlist format {0}.'.format(extension))
         else:
             return self._build_playlist_from_all_files()
 
@@ -487,6 +484,11 @@ class VideoLooper:
         
         if action in ['K_ESCAPE', 'K_k', 'K_s', 'K_SPACE', 'K_p', 'K_b', 'K_o', 'K_i']:
             pygame.event.post(pygame.event.Event(pygame.KEYDOWN, key=getattr(pygame, action, None)))
+        elif ".m3u" in action:
+            self._playlist_path = action
+            self._playlist = self._build_playlist()
+            self._player.stop(3)
+            self._playbackStopped = False
         else:
             self._playlist.set_next(action)
             self._player.stop(3)
@@ -537,19 +539,16 @@ class VideoLooper:
                             time.sleep(self._wait_time)
                     self._firstStart = False
 
+                    #player loop setting:
+                    player_loop = -1 if self._playlist.length()==1 or movie.repeats == -1 else None
+                    
                     #generating infotext
                     if self._player.can_loop_count():
                         infotext = f"{movie.repeats} time{'s' if movie.repeats>1 else ''} (player counts loops)"
                     else:
                         infotext = f"{movie.playcount}/{movie.repeats}"
-                    if self._playlist.length()==1:
+                    if player_loop==-1:
                         infotext = '(endless loop)'
-
-                    #player loop setting:
-                    player_loop = -1 if self._playlist.length()==1 else None
-                    
-                    #special movie with infinite repeat
-                    player_loop = -1 if movie.repeats == -1 else None
 
                     #special one-shot playback condition
                     if self._one_shot_playback:
