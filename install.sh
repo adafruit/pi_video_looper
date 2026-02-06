@@ -53,4 +53,30 @@ cp ./assets/video_looper.conf /etc/supervisor/conf.d/
 
 service supervisor restart
 
+echo "Do you want to install a splash screen and hide the default raspberry boot info? (y/n)"
+read install_splash
+if [ "$install_splash" = "y" ] || [ "$install_splash" = "Y" ]; then
+	echo "Installing splash screen..."
+	echo "==========================="
+
+	apt install -y fbi
+
+	echo '##videolooper settings' >> /boot/config.txt
+	echo 'disable_splash=1' >> /boot/config.txt
+	echo 'avoid_warnings=1' >> /boot/config.txt
+	sed -i -e 's/rootwait/rootwait quiet splash loglevel=0 consoleblank=0 logo.nologo vt.global_cursor_default=0 plymouth.ignore-serial-consoles /' /boot/cmdline.txt
+	sed -i  '/exit 0/i\#Suppress Kernel Messages\ndmesg --console-off\n' /etc/rc.local
+	touch ~/.hushlogin
+	systemctl disable getty@tty1
+
+	cp ./assets/loader.png /home/pi/loader.png
+	chown pi:pi /home/pi/loader.png
+	cp ./assets/splashscreen.service /etc/systemd/system/splashscreen.service
+	systemctl enable splashscreen
+
+else
+	echo "Skipping splash screen installation."
+	echo "===================================="
+fi
+
 echo "Finished!"
