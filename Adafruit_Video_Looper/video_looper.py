@@ -10,6 +10,7 @@ import subprocess
 import sys
 import signal
 import time
+import urllib.parse
 import pygame
 import json
 import threading
@@ -18,7 +19,6 @@ import RPi.GPIO as GPIO
 
 from .alsa_config import parse_hw_device
 from .model import Playlist, Movie
-from .playlist_builders import build_playlist_m3u
 
 # Basic video looper architecure:
 #
@@ -60,7 +60,7 @@ class VideoLooper:
         self._is_random = self._config.getboolean('video_looper', 'is_random', fallback=False) or self._is_random_unique
         self._one_shot_playback = self._config.getboolean('video_looper', 'one_shot_playback', fallback=False)
         self._play_on_startup = self._config.getboolean('video_looper', 'play_on_startup', fallback=True)
-        self._resume_playlist = self._config.getboolean('video_looper', 'resume_playlist')
+        self._resume_playlist = self._config.getboolean('video_looper', 'resume_playlist', fallback=False)
         self._playlist_path = self._config.get('playlist', 'path', fallback='')
         self._keyboard_control = self._config.getboolean('control', 'keyboard_control')
         self._keyboard_control_disabled_while_playback = self._config.getboolean('control', 'keyboard_control_disabled_while_playback')
@@ -191,7 +191,7 @@ class VideoLooper:
         except ValueError:
             return False
 
-    def _build_playlist(self):
+    def _build_playlist(self) -> Playlist:
         """Try to build a playlist (object) from a playlist (file).
         Falls back to an auto-generated playlist with all files.
         """
@@ -205,7 +205,7 @@ class VideoLooper:
                 paths = self._reader.search_paths()
                 
                 if not paths:
-                    return Playlist([])
+                    return Playlist([], self._is_random, self._is_random_unique, self._resume_playlist)
                 
                 for path in paths:
                     maybe_playlist_path = os.path.join(path, self._playlist_path)
@@ -220,15 +220,46 @@ class VideoLooper:
 
             basepath, extension = os.path.splitext(playlist_path)
             if extension == '.m3u' or extension == '.m3u8':
-                return build_playlist_m3u(playlist_path)
+                return self._build_playlist_m3u(playlist_path)
             else:
                 self._print(f'Unrecognized playlist format {extension}.')
                 return self._build_playlist_from_all_files()
                 #raise RuntimeError('Unrecognized playlist format {0}.'.format(extension))
         else:
             return self._build_playlist_from_all_files()
+    
+    def _build_playlist_m3u(self, playlist_path: str) -> Playlist:
+        """
+        Build a playlist from an M3U or M3U8 file.
 
-    def _build_playlist_from_all_files(self):
+        :param self: The instance of the video looper.
+        :param playlist_path: The path to the M3U or M3U8 playlist file.
+        :type playlist_path: str
+        :return: A Playlist object containing the movies from the playlist file.
+        :rtype: Playlist
+        """
+        playlist_dirname = os.path.dirname(playlist_path)
+        movies = []
+
+        title = None
+
+        with open(playlist_path) as f:
+            for line in f:
+                if line.startswith('#'):
+                    if line.startswith('#EXTINF'):
+                        matches = re.match(r'^#\w+:\d+(?:\s*\w+\=\".*\")*,(.*)$', line)
+                        if matches:
+                            title = matches[1]
+                else:
+                    path = urllib.parse.unquote(line.rstrip())
+                    if not os.path.isabs(path):
+                        path = os.path.join(playlist_dirname, path)
+                    movies.append(Movie(path, title))
+                    title = None
+
+        return Playlist(movies, self._is_random, self._is_random_unique, self._resume_playlist)
+
+    def _build_playlist_from_all_files(self) -> Playlist:
         """Search all the file reader paths for movie files with the provided
         extensions.
         """
@@ -243,12 +274,12 @@ class VideoLooper:
 
             for x in os.listdir(path):
                 # Ignore hidden files (useful when file loaded on usb key from an OSX computer
-                if x[0] != '.' and re.search('\.({0})$'.format(self._extensions), x, flags=re.IGNORECASE):
+                if x[0] != '.' and re.search(r'\.({0})$'.format(self._extensions), x, flags=re.IGNORECASE):
                     moviename = None
-                    repeatsetting = re.search('_repeat_(-?)([0-9]*)x', x, flags=re.IGNORECASE)
+                    repeatsetting = re.search(r'_repeat_(-?)([0-9]*)x', x, flags=re.IGNORECASE)
                     if (repeatsetting is not None and repeatsetting.group(2) != ''):
                         repeat = int(repeatsetting.group(1) + repeatsetting.group(2))
-                        moviename = os.path.splitext(re.sub('_repeat_(-?)([0-9]*)x', '', x, flags=re.IGNORECASE))[0]
+                        moviename = os.path.splitext(re.sub(r'_repeat_(-?)([0-9]*)x', '', x, flags=re.IGNORECASE))[0]
                     else:
                         repeat = 1
                         moviename = os.path.splitext(x)[0]
@@ -271,7 +302,7 @@ class VideoLooper:
                         if self._is_number(sound_vol_string):
                             self._sound_vol = int(float(sound_vol_string))
         # Create a playlist with the sorted list of movies.
-        return Playlist(sorted(movies))
+        return Playlist(sorted(movies), self._is_random, self._is_random_unique, self._resume_playlist)
 
     def _blank_screen(self):
         """Render a blank screen filled with the background color and optional the background image."""
@@ -440,7 +471,7 @@ class VideoLooper:
                     self.quit()
                 if event.key == pygame.K_k:
                     self._print("k was pressed. skipping...")
-                    self._playlist.seek(1)
+                    self._playlist.seek(1) # type: ignore
                     self._player.stop(3)
                     self._playbackStopped = False
                 if event.key == pygame.K_s:
@@ -460,7 +491,7 @@ class VideoLooper:
                     self.quit(True)
                 if event.key == pygame.K_b:
                     self._print("b was pressed. jumping back...")
-                    self._playlist.seek(-1)
+                    self._playlist.seek(-1) # type: ignore
                     self._player.stop(3)
                     self._playbackStopped = False
                 if event.key == pygame.K_o:
@@ -490,7 +521,7 @@ class VideoLooper:
             self._player.stop(3)
             self._playbackStopped = False
         else:
-            self._playlist.set_next(action)
+            self._playlist.set_next(action) # type: ignore
             self._player.stop(3)
             self._playbackStopped = False
     
@@ -508,9 +539,6 @@ class VideoLooper:
         """Main program loop.  Will never return!"""
         # Get playlist of movies to play from file reader.
         self._playlist = self._build_playlist()
-        self._playlist.set_random(self._is_random)
-        self._playlist.set_random_unique(self._is_random_unique)
-        self._playlist.set_resume(self._resume_playlist) 
         self._prepare_to_run_playlist(self._playlist)
         self._set_hardware_volume()
         movie = self._playlist.get_next()
@@ -529,7 +557,13 @@ class VideoLooper:
                             movie.clear_playcount()
                         movie = self._playlist.get_next()
                         
-                    movie.was_played()
+                    ## check if movie is actually a m3u file
+                    if ".m3u" in movie.filename: # type: ignore
+                        self._playlist_path = movie.filename # type: ignore
+                        self._playlist = self._build_playlist()
+                        movie = self._playlist.get_next()
+                        
+                    movie.was_played() # type: ignore
 
                     if self._wait_time > 0 and not self._firstStart:
                         if(self._datetime_display):
@@ -540,13 +574,13 @@ class VideoLooper:
                     self._firstStart = False
 
                     #player loop setting:
-                    player_loop = -1 if self._playlist.length()==1 or movie.repeats == -1 else None
+                    player_loop = -1 if self._playlist.length()==1 or movie.repeats == -1 else None # type: ignore
                     
                     #generating infotext
                     if self._player.can_loop_count():
-                        infotext = f"{movie.repeats} time{'s' if movie.repeats>1 else ''} (player counts loops)"
+                        infotext = f"{movie.repeats} time{'s' if movie.repeats>1 else ''} (player counts loops)" # type: ignore
                     else:
-                        infotext = f"{movie.playcount}/{movie.repeats}"
+                        infotext = f"{movie.playcount}/{movie.repeats}" # type: ignore
                     if player_loop==-1:
                         infotext = '(endless loop)'
 
@@ -569,9 +603,6 @@ class VideoLooper:
                 self._print("player stopped")
                 # Rebuild playlist and show countdown again (if OSD enabled).
                 self._playlist = self._build_playlist()
-                self._playlist.set_random(self._is_random)
-                self._playlist.set_random_unique(self._is_random_unique)
-                self._playlist.set_resume(self._resume_playlist) 
                 #refresh background image
                 if self._copyloader:
                     self._bgimage = self._load_bgimage()

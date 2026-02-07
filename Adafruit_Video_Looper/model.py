@@ -50,14 +50,14 @@ class Movie:
 class Playlist:
     """Representation of a playlist of movies."""
 
-    def __init__(self, movies):
+    def __init__(self, movies, is_random, is_random_unique, resume_playlist):
         """Create a playlist from the provided list of movies."""
         self._movies = movies
         self._index = None
         self._next = None
-        self._is_random = False
-        self._is_random_unique = False
-        self._resume = False
+        self._is_random = is_random
+        self._is_random_unique = is_random_unique
+        self._resume = resume_playlist
 
     def get_next(self) -> Movie:
         """Get the next movie in the playlist. Will loop to start of playlist
@@ -127,15 +127,6 @@ class Playlist:
         if not (self._is_random and self._is_random_unique):
             self.clear_all_playcounts()
         self._movies[self._index].finish_playing() #set the current to max playcount so it will not get played again
-    
-    def set_random(self, enable: bool):
-        self._is_random = enable
-    
-    def set_random_unique(self, enable: bool):
-        self._is_random_unique = enable
-    
-    def set_resume(self, enable: bool):
-        self._resume = enable
        
     # sets next relative to current index
     def seek(self, amount:int):
