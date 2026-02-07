@@ -17,6 +17,10 @@ For a detailed tutorial visit: <https://learn.adafruit.com/raspberry-pi-video-lo
 There are also pre-compiled images available from <https://videolooper.de> (but they might not always contain the latest version of pi_video_looper)
 
 ## Changelog
+#### new in v1.0.21 
+ - Playlist files (m3u) can be triggered from GPIO
+ - Playlist files can now also contain entries to other playlist files
+
 #### new in v1.0.20
  - GPIO pins can be set via ini to be pulled high or low 
  - special "loop specific file" function  
@@ -189,6 +193,10 @@ Note: files with the same name always get overwritten.
 * if you have only one video then omxplayer will also loop seamlessly (and with audio)
 
 * to reduce the wear of the SD card and potentially extend the lifespan of the player, you could enable the overlay filesystem via `raspi-config` and select Performance Options->Overlay Filesystem
+
+* m3u files are a pretty powerful tool to tailor the looper to your usecase  
+Example: create a start.m3u with only one video entry inside, and set it in the ini as playlist.path, create a second playlist file e.g. button1.m3u in there you can define multiple videos and as the last entry add "start.m3u" and add it to a gpio pin in the ini's gpio_pin_map  
+now you can trigger the button1 playlist from gpio and after it is done playing the videos defined there it will jump back to the start loop (beware! if random is enabled it could also select the m3u file from the list at any time)
 
 ### Control
 The video looper can be controlled via keyboard input or via configured GPIO pins. 
