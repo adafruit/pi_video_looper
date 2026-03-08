@@ -14,6 +14,7 @@ import urllib.parse
 import pygame
 import json
 import threading
+import cec
 from datetime import datetime
 import RPi.GPIO as GPIO
 
@@ -66,6 +67,7 @@ class VideoLooper:
         self._keyboard_control_disabled_while_playback = self._config.getboolean('control', 'keyboard_control_disabled_while_playback')
         self._gpio_control_disabled_while_playback = self._config.getboolean('control', 'gpio_control_disabled_while_playback')
         self._copyloader = self._config.getboolean('copymode', 'copyloader')
+        self._cec = self._config.getboolean('video_looper', 'cec')
         # Get seconds for countdown from config
         self._countdown_time = self._config.getint('video_looper', 'countdown_time')
         # Get seconds for waittime bewteen files from config
@@ -133,6 +135,10 @@ class VideoLooper:
                 self._print("gpio_pin_map setting is not valid and/or error with GPIO setup")
         else:
             self._pinMap = None
+
+        if self._cec:
+            self._print("initializing CEC for hdmi control")
+            cec.init()
 
     def _print(self, message):
         """Print message to standard output if console output is enabled."""
@@ -447,6 +453,11 @@ class VideoLooper:
             self._idle_message()
 
     def _set_hardware_volume(self):
+        if self._cec:
+            self._print("setting vol to max via CEC")
+            for _ in range(10):
+                cec.vol_up()
+
         if self._alsa_hw_vol is not None:
             self._print(f"setting hardware volume (device: {self._alsa_hw_device}, control: {self._alsa_hw_vol_control}, value: {self._alsa_hw_vol})")
             cmd = ['amixer', '-M']
