@@ -67,7 +67,8 @@ class VideoLooper:
         self._keyboard_control_disabled_while_playback = self._config.getboolean('control', 'keyboard_control_disabled_while_playback')
         self._gpio_control_disabled_while_playback = self._config.getboolean('control', 'gpio_control_disabled_while_playback')
         self._copyloader = self._config.getboolean('copymode', 'copyloader')
-        self._cec = self._config.getboolean('video_looper', 'cec')
+        self._cec = self._config.getboolean('video_looper', 'cec', fallback=False)
+        self._cec_volume_max_on_startup = self._config.getboolean('video_looper', 'cec_volume_max_on_startup', fallback=False) and self._cec
         # Get seconds for countdown from config
         self._countdown_time = self._config.getint('video_looper', 'countdown_time')
         # Get seconds for waittime bewteen files from config
@@ -137,8 +138,8 @@ class VideoLooper:
             self._pinMap = None
 
         if self._cec:
-            self._print("initializing CEC for hdmi control")
-            cec.init()
+            self._cec_thread = threading.Thread(target=self._cec_control, daemon=True)
+            self._cec_thread.start()
 
     def _print(self, message):
         """Print message to standard output if console output is enabled."""
@@ -452,12 +453,25 @@ class VideoLooper:
         else:
             self._idle_message()
 
-    def _set_hardware_volume(self):
-        if self._cec:
-            self._print("setting vol to max via CEC")
-            for _ in range(10):
-                cec.vol_up()
+    def _cec_control(self):
+        self._print("initializing CEC for hdmi control")
+        cec.init()
+        self._print("setting myself as active source")
+        cec.set_active_source()
+        self._cecDevice = cec.list_devices()[0] if cec.list_devices() else None
 
+        if self._cecDevice is not None and self._cec_volume_max_on_startup:
+            self._print("setting vol to max via CEC")
+            for _ in range(100):
+                cec.volume_up()
+                # this presses the enter key to dismiss the volume warning on some TVs
+                self._cecDevice.transmit(cec.CEC_OPCODE_USER_CONTROL_PRESSED, b'\x00')
+                self._cecDevice.transmit(cec.CEC_OPCODE_USER_CONTROL_RELEASE, b'\x00')
+
+        # set active source again in case tv was not ready during the first attempt
+        cec.set_active_source()
+
+    def _set_hardware_volume(self):
         if self._alsa_hw_vol is not None:
             self._print(f"setting hardware volume (device: {self._alsa_hw_device}, control: {self._alsa_hw_vol_control}, value: {self._alsa_hw_vol})")
             cmd = ['amixer', '-M']
